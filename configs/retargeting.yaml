@@ -1,0 +1,99 @@
+rate:
+  video: 59.942
+  mocap: 100
+
+paths:
+  smplx_models: data/smplx_models
+
+rigid_body_solver:
+  max_stress: 1e-6
+  plane_solver:
+    max_stress: 4e-6
+
+time_sync_solver:
+  # Reject sync when the (possibly motion-weighted) score is below this; 0 disables.
+  min_correlation: 0.28
+  # Search only lags in [-max,+max] s (intersected with valid overlap) and reject |lag| above this.
+  # Raise if recordings can start minutes apart; lower if false peaks sit just inside the window.
+  max_abs_lag_seconds: 20.0
+  # Down-weight overlap samples where either foot is nearly static (reduces false NCC peaks).
+  motion_weighted_sync: true
+  motion_weight_floor_quantile: 0.12
+  smplx_joints:
+    vicon/Left_Shoe/Left_Shoe:
+      - left_ankle
+      - left_foot
+      - left_big_toe
+      - left_small_toe
+      - left_heel
+    vicon/Right_Shoe/Right_Shoe:
+      - right_ankle
+      - right_foot
+      - right_big_toe
+      - right_small_toe
+      - right_heel
+
+bodies:
+  Left_Shoe:
+    markers:
+      - Unlabeled18658
+      - Unlabeled19573
+      - Unlabeled20169
+      - Unlabeled20174
+      - Unlabeled20175
+      - Unlabeled20171
+    planes:
+      left_foot_plane:
+        - Unlabeled18658
+        - Unlabeled19573
+        - Unlabeled20169
+        - Unlabeled20174
+        - Unlabeled20175
+  Right_Shoe:
+    markers:
+      - Unlabeled18579
+      - Unlabeled20165
+      - Unlabeled20991
+      - Unlabeled21322
+      - Unlabeled21324
+      - Unlabeled21323
+    planes:
+      right_foot_plane:
+        - Unlabeled18579
+        - Unlabeled20165
+        - Unlabeled20991
+        - Unlabeled21322
+        - Unlabeled21324
+  Skateboard:
+    markers:
+      - front_right_pole_left
+      - rear_right_pole_right
+      - front_left_pole_right
+      - front_right_pole_right
+      - front_left_pole_left
+      - rear_right_pole_left
+      - rear_left_pole_left
+      - rear_left_pole_right
+      - front_left_wheel
+      - front_right_wheel
+      - rear_left_wheel
+      - rear_right_wheel
+      - rear_left_board
+      - rear_right_board
+      - front_left_board
+      - front_center_board
+    planes:
+      pole_plane:
+        - front_right_pole_left
+        - rear_right_pole_right
+        - front_left_pole_right
+        - front_right_pole_right
+        - front_left_pole_left
+        - rear_right_pole_left
+        - rear_left_pole_left
+        - rear_left_pole_right
+      wheel_plane:
+        - front_left_wheel
+        - front_right_wheel
+        - rear_left_wheel
+        - rear_right_wheel

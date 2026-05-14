@@ -1,0 +1,1 @@
+- In the future, record the pushoff videos with the chest facing the camera, not the side.

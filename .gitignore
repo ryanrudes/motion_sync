@@ -1,0 +1,43 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# IDE
+.vscode/
+.cursor/
+.idea/
+
+# macOS
+.DS_Store
+
+# Large Videos
+data/videos/
+
+# ROS bags and SMPL-X weights (download separately; multi-GB)
+data/bags/
+data/smplx_models/
+
+# Pipeline outputs (GVHMR, sync, holosoma exports, etc.)
+output/
+
+# Holosoma editable-install artifacts and run outputs next to the package
+holosoma/src/holosoma_retargeting/holosoma_retargeting_data/
+holosoma/src/holosoma_retargeting/holosoma_retargeting_results/
+holosoma/src/holosoma_retargeting/*.egg-info/
+
+# Trash
+trash/
+
+# Virtual environments
+.venv
+holosoma/.venv
+
+# Backup of nested holosoma/.git after flattening into this repo (safe to delete locally)
+.holosoma_git_backup/
+
+# SMPL pickle backups from scripts/convert_smpl_pickle_off_chumpy.py
+*.chumpy_legacy_bak

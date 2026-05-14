@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<KinematicModel MODEL="Skateboard" VERSION="2.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.vicon.com/Schemas/ViconVST.xsd">
+
+  <Parameters>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_pole_left_x" PRIOR="-164.263641357422" SD="1.00000002004088e+020" VALUE="-164.263641357422"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_pole_left_y" PRIOR="158.767028808594" SD="1.00000002004088e+020" VALUE="158.767028808594"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_pole_left_z" PRIOR="0.661289691925049" SD="1.00000002004088e+020" VALUE="0.661289691925049"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_pole_right_x" PRIOR="168.482147216797" SD="1.00000002004088e+020" VALUE="168.482147216797"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_pole_right_y" PRIOR="140.444152832031" SD="1.00000002004088e+020" VALUE="140.444152832031"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_pole_right_z" PRIOR="-1.2589373588562" SD="1.00000002004088e+020" VALUE="-1.2589373588562"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_pole_right_x" PRIOR="-181.85417175293" SD="1.00000002004088e+020" VALUE="-181.85417175293"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_pole_right_y" PRIOR="-139.509094238281" SD="1.00000002004088e+020" VALUE="-139.509094238281"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_pole_right_z" PRIOR="-1.07604551315308" SD="1.00000002004088e+020" VALUE="-1.07604551315308"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_pole_right_x" PRIOR="-251.411773681641" SD="1.00000002004088e+020" VALUE="-251.411773681641"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_pole_right_y" PRIOR="164.322509765625" SD="1.00000002004088e+020" VALUE="164.322509765625"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_pole_right_z" PRIOR="0.129482746124268" SD="1.00000002004088e+020" VALUE="0.129482746124268"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_pole_left_x" PRIOR="-268.377655029297" SD="1.00000002004088e+020" VALUE="-268.377655029297"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_pole_left_y" PRIOR="-134.926025390625" SD="1.00000002004088e+020" VALUE="-134.926025390625"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_pole_left_z" PRIOR="-2.36724424362183" SD="1.00000002004088e+020" VALUE="-2.36724424362183"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_pole_left_x" PRIOR="253.883926391602" SD="1.00000002004088e+020" VALUE="253.883926391602"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_pole_left_y" PRIOR="135.777526855469" SD="1.00000002004088e+020" VALUE="135.777526855469"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_pole_left_z" PRIOR="-2.29718351364136" SD="1.00000002004088e+020" VALUE="-2.29718351364136"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_pole_left_x" PRIOR="152.938766479492" SD="1.00000002004088e+020" VALUE="152.938766479492"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_pole_left_y" PRIOR="-156.757995605469" SD="1.00000002004088e+020" VALUE="-156.757995605469"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_pole_left_z" PRIOR="-0.357348918914795" SD="1.00000002004088e+020" VALUE="-0.357348918914795"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_pole_right_x" PRIOR="237.618835449219" SD="1.00000002004088e+020" VALUE="237.618835449219"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_pole_right_y" PRIOR="-162.13720703125" SD="1.00000002004088e+020" VALUE="-162.13720703125"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_pole_right_z" PRIOR="-2.07529783248901" SD="1.00000002004088e+020" VALUE="-2.07529783248901"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_wheel_x" PRIOR="-227.167846679688" SD="1.00000002004088e+020" VALUE="-227.167846679688"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_wheel_y" PRIOR="-91.8253173828125" SD="1.00000002004088e+020" VALUE="-91.8253173828125"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_wheel_z" PRIOR="-33.3663063049316" SD="1.00000002004088e+020" VALUE="-33.3663063049316"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_wheel_x" PRIOR="-216.529174804688" SD="1.00000002004088e+020" VALUE="-216.529174804688"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_wheel_y" PRIOR="115.036865234375" SD="1.00000002004088e+020" VALUE="115.036865234375"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_right_wheel_z" PRIOR="-34.4103965759277" SD="1.00000002004088e+020" VALUE="-34.4103965759277"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_wheel_x" PRIOR="203.173416137695" SD="1.00000002004088e+020" VALUE="203.173416137695"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_wheel_y" PRIOR="-116.383239746094" SD="1.00000002004088e+020" VALUE="-116.383239746094"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_wheel_z" PRIOR="-33.7262001037598" SD="1.00000002004088e+020" VALUE="-33.7262001037598"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_wheel_x" PRIOR="213.199905395508" SD="1.00000002004088e+020" VALUE="213.199905395508"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_wheel_y" PRIOR="92.919677734375" SD="1.00000002004088e+020" VALUE="92.919677734375"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_wheel_z" PRIOR="-32.6006278991699" SD="1.00000002004088e+020" VALUE="-32.6006278991699"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_board_x" PRIOR="370.017669677734" SD="1.00000002004088e+020" VALUE="370.017669677734"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_board_y" PRIOR="-54.907096862793" SD="1.00000002004088e+020" VALUE="-54.907096862793"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_left_board_z" PRIOR="80.0907821655273" SD="1.00000002004088e+020" VALUE="80.0907821655273"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_board_x" PRIOR="369.063934326172" SD="1.00000002004088e+020" VALUE="369.063934326172"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_board_y" PRIOR="22.7377624511719" SD="1.00000002004088e+020" VALUE="22.7377624511719"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_rear_right_board_z" PRIOR="78.481803894043" SD="1.00000002004088e+020" VALUE="78.481803894043"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_board_x" PRIOR="-279.038665771484" SD="1.00000002004088e+020" VALUE="-279.038665771484"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_board_y" PRIOR="-32.5332412719727" SD="1.00000002004088e+020" VALUE="-32.5332412719727"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_front_left_board_z" PRIOR="41.5666618347168" SD="1.00000002004088e+020" VALUE="41.5666618347168"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_Unlabeled43519_x" PRIOR="-335.626800537109" SD="1.00000002004088e+020" VALUE="-335.626800537109"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_Unlabeled43519_y" PRIOR="17.6803512573242" SD="1.00000002004088e+020" VALUE="17.6803512573242"/>
+    <Parameter HIDDEN="1" NAME="Skateboard_Unlabeled43519_z" PRIOR="59.2156944274902" SD="1.00000002004088e+020" VALUE="59.2156944274902"/>
+  </Parameters>
+
+  <Skeleton RGB="0 85 255">
+    <Segment BOUNDS="-50 -50 -50 50 50 50 " CONTEXT="General" INERTIA="0 0 0 " MASS="0 " MASS-CENTRE="0 0 0 " NAME="Skateboard" RGB="255 164 0">
+      <JointFree BOUNDS="0 0 0 0 0 0 0 0 0 0 0 0" COVARIANCE="2.46490001678467 0 0 0 0 0  0 2.46490001678467 0 0 0 0  0 0 246.490005493164 0 0 0  0 0 0 1000000 0 0  0 0 0 0 1000000 0  0 0 0 0 0 1000000  " MEAN="0 0 0 0 0 0" NAME="World_Skateboard" POST-ORIENTATION="0 0 0" POST-POSITION="0 0 0" PRE-ORIENTATION="0 0 0" PRE-POSITION="0 0 0" SIGNS="+ + + + + + " T="* * * * * * ">
+        <JointTemplate COVARIANCE="2.46490001678467 0 0 0 0 0  0 2.46490001678467 0 0 0 0  0 0 246.490005493164 0 0 0  0 0 0 1000000 0 0  0 0 0 0 1000000 0  0 0 0 0 0 1000000  " MEAN="0 0 0 0 0 0" POST-ORIENTATION="0 0 0 " POST-POSITION="0 0 0 " PRE-ORIENTATION="0 0 0 " PRE-POSITION="0 0 0 " TPOSE-COVARIANCE="0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  " TPOSE-MEAN="0 0 0 0 0 0"/>
+      </JointFree>
+    </Segment>
+  </Skeleton>
+
+  <MarkerSet>
+    <Markers>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_right_pole_left" POSITION="-164.264 158.767 0.66129" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_front_right_pole_left_x' 'Skateboard_front_right_pole_left_y' 'Skateboard_front_right_pole_left_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_right_pole_right" POSITION="168.482 140.444 -1.25894" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_right_pole_right_x' 'Skateboard_rear_right_pole_right_y' 'Skateboard_rear_right_pole_right_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_left_pole_right" POSITION="-181.854 -139.509 -1.07605" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_front_left_pole_right_x' 'Skateboard_front_left_pole_right_y' 'Skateboard_front_left_pole_right_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_right_pole_right" POSITION="-251.412 164.323 0.129483" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_front_right_pole_right_x' 'Skateboard_front_right_pole_right_y' 'Skateboard_front_right_pole_right_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_left_pole_left" POSITION="-268.378 -134.926 -2.36724" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_front_left_pole_left_x' 'Skateboard_front_left_pole_left_y' 'Skateboard_front_left_pole_left_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_right_pole_left" POSITION="253.884 135.778 -2.29718" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_right_pole_left_x' 'Skateboard_rear_right_pole_left_y' 'Skateboard_rear_right_pole_left_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_left_pole_left" POSITION="152.939 -156.758 -0.357349" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_left_pole_left_x' 'Skateboard_rear_left_pole_left_y' 'Skateboard_rear_left_pole_left_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_left_pole_right" POSITION="237.619 -162.137 -2.0753" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_left_pole_right_x' 'Skateboard_rear_left_pole_right_y' 'Skateboard_rear_left_pole_right_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_left_wheel" POSITION="-227.168 -91.8253 -33.3663" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_front_left_wheel_x' 'Skateboard_front_left_wheel_y' 'Skateboard_front_left_wheel_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_right_wheel" POSITION="-216.529 115.037 -34.4104" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_front_right_wheel_x' 'Skateboard_front_right_wheel_y' 'Skateboard_front_right_wheel_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_left_wheel" POSITION="203.173 -116.383 -33.7262" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_left_wheel_x' 'Skateboard_rear_left_wheel_y' 'Skateboard_rear_left_wheel_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_right_wheel" POSITION="213.2 92.9197 -32.6006" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_right_wheel_x' 'Skateboard_rear_right_wheel_y' 'Skateboard_rear_right_wheel_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_left_board" POSITION="370.018 -54.9071 80.0908" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_left_board_x' 'Skateboard_rear_left_board_y' 'Skateboard_rear_left_board_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="rear_right_board" POSITION="369.064 22.7378 78.4818" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_rear_right_board_x' 'Skateboard_rear_right_board_y' 'Skateboard_rear_right_board_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_left_board" POSITION="-279.039 -32.5332 41.5667" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_front_left_board_x' 'Skateboard_front_left_board_y' 'Skateboard_front_left_board_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="front_center_board" POSITION="-335.627 17.6804 59.2157" RADIUS="4.75" RGB="255 164 0" SEGMENT="Skateboard" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Skateboard_Unlabeled43519_x' 'Skateboard_Unlabeled43519_y' 'Skateboard_Unlabeled43519_z'"/>
+      </Marker>
+    </Markers>
+    <Sticks>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_right_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="front_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="front_right_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="front_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_right_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_left" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="front_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="front_right_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="front_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="rear_right_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="rear_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="rear_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_right" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="front_right_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="front_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="rear_right_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="rear_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="rear_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_right" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="front_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="rear_right_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="rear_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="rear_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_pole_right" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="rear_right_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="rear_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="rear_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_pole_left" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="rear_left_pole_left" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="rear_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_pole_left" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="rear_left_pole_right" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_left" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="front_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_pole_right" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_wheel" MARKER2="front_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_wheel" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_wheel" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_wheel" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_wheel" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_wheel" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_wheel" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_wheel" MARKER2="rear_left_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_wheel" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_wheel" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_wheel" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_wheel" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_right_wheel" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_wheel" MARKER2="rear_right_wheel" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_wheel" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_wheel" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_wheel" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_wheel" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_wheel" MARKER2="rear_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_wheel" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_wheel" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_wheel" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_board" MARKER2="rear_right_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_board" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_left_board" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_board" MARKER2="front_left_board" RGB="255 164 0"/>
+      <Stick MARKER1="rear_right_board" MARKER2="front_center_board" RGB="255 164 0"/>
+      <Stick MARKER1="front_left_board" MARKER2="front_center_board" RGB="255 164 0"/>
+    </Sticks>
+  </MarkerSet>
+
+  <Alignment/>
+
+</KinematicModel>

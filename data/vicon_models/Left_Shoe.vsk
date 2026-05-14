@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<KinematicModel VERSION="2.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.vicon.com/Schemas/ViconVST.xsd">
+
+  <Parameters>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled18658_x" PRIOR="72.3514709472656" SD="1.00000002004088e+020" VALUE="72.3514709472656"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled18658_y" PRIOR="143.05827331543" SD="1.00000002004088e+020" VALUE="143.05827331543"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled18658_z" PRIOR="13.7204313278198" SD="1.00000002004088e+020" VALUE="13.7204313278198"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled19573_x" PRIOR="-36.6151733398438" SD="1.00000002004088e+020" VALUE="-36.6151733398438"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled19573_y" PRIOR="84.1268844604492" SD="1.00000002004088e+020" VALUE="84.1268844604492"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled19573_z" PRIOR="6.71022367477417" SD="1.00000002004088e+020" VALUE="6.71022367477417"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20169_x" PRIOR="-77.1510314941406" SD="1.00000002004088e+020" VALUE="-77.1510314941406"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20169_y" PRIOR="-55.5493278503418" SD="1.00000002004088e+020" VALUE="-55.5493278503418"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20169_z" PRIOR="-12.6146287918091" SD="1.00000002004088e+020" VALUE="-12.6146287918091"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20171_x" PRIOR="-60.4945602416992" SD="1.00000002004088e+020" VALUE="-60.4945602416992"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20171_y" PRIOR="-145.128982543945" SD="1.00000002004088e+020" VALUE="-145.128982543945"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20171_z" PRIOR="3.06312108039856" SD="1.00000002004088e+020" VALUE="3.06312108039856"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20174_x" PRIOR="18.6594104766846" SD="1.00000002004088e+020" VALUE="18.6594104766846"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20174_y" PRIOR="-67.1944046020508" SD="1.00000002004088e+020" VALUE="-67.1944046020508"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20174_z" PRIOR="-14.4217538833618" SD="1.00000002004088e+020" VALUE="-14.4217538833618"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20175_x" PRIOR="83.2498779296875" SD="1.00000002004088e+020" VALUE="83.2498779296875"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20175_y" PRIOR="40.6875495910645" SD="1.00000002004088e+020" VALUE="40.6875495910645"/>
+    <Parameter HIDDEN="1" NAME="Left Shoe_Unlabeled20175_z" PRIOR="3.54260563850403" SD="1.00000002004088e+020" VALUE="3.54260563850403"/>
+  </Parameters>
+
+  <Skeleton>
+    <Segment BOUNDS="-50 -50 -50 50 50 50 " CONTEXT="Left" INERTIA="0 0 0 " MASS="0 " MASS-CENTRE="0 0 0 " NAME="Left_Shoe" RGB="255 0 0">
+      <JointFree BOUNDS="0 0 0 0 0 0 0 0 0 0 0 0" COVARIANCE="2.46490001678467 0 0 0 0 0  0 2.46490001678467 0 0 0 0  0 0 246.490005493164 0 0 0  0 0 0 1000000 0 0  0 0 0 0 1000000 0  0 0 0 0 0 1000000  " MEAN="0 0 0 0 0 0" NAME="World_Left Shoe" POST-ORIENTATION="0 0 0" POST-POSITION="0 0 0" PRE-ORIENTATION="0 0 0" PRE-POSITION="0 0 0" SIGNS="+ + + + + + " T="* * * * * * ">
+        <JointTemplate COVARIANCE="2.46490001678467 0 0 0 0 0  0 2.46490001678467 0 0 0 0  0 0 246.490005493164 0 0 0  0 0 0 1000000 0 0  0 0 0 0 1000000 0  0 0 0 0 0 1000000  " MEAN="0 0 0 0 0 0" POST-ORIENTATION="0 0 0 " POST-POSITION="0 0 0 " PRE-ORIENTATION="0 0 0 " PRE-POSITION="0 0 0 " TPOSE-COVARIANCE="0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  " TPOSE-MEAN="0 0 0 0 0 0"/>
+      </JointFree>
+    </Segment>
+  </Skeleton>
+
+  <MarkerSet>
+    <Markers>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="Unlabeled18658" POSITION="72.3515 143.058 13.7204" RADIUS="12.5" RGB="255 0 0" SEGMENT="Left_Shoe" STATUS="required">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Left Shoe_Unlabeled18658_x' 'Left Shoe_Unlabeled18658_y' 'Left Shoe_Unlabeled18658_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="Unlabeled19573" POSITION="-36.6152 84.1269 6.71022" RADIUS="12.5" RGB="255 0 0" SEGMENT="Left_Shoe" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Left Shoe_Unlabeled19573_x' 'Left Shoe_Unlabeled19573_y' 'Left Shoe_Unlabeled19573_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="Unlabeled20169" POSITION="-77.151 -55.5493 -12.6146" RADIUS="12.5" RGB="255 0 0" SEGMENT="Left_Shoe" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Left Shoe_Unlabeled20169_x' 'Left Shoe_Unlabeled20169_y' 'Left Shoe_Unlabeled20169_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="Unlabeled20171" POSITION="-60.4946 -145.129 3.06312" RADIUS="12.5" RGB="255 0 0" SEGMENT="Left_Shoe" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Left Shoe_Unlabeled20171_x' 'Left Shoe_Unlabeled20171_y' 'Left Shoe_Unlabeled20171_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="Unlabeled20174" POSITION="18.6594 -67.1944 -14.4218" RADIUS="12.5" RGB="255 0 0" SEGMENT="Left_Shoe" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Left Shoe_Unlabeled20174_x' 'Left Shoe_Unlabeled20174_y' 'Left Shoe_Unlabeled20174_z'"/>
+      </Marker>
+      <Marker COVARIANCE="1 0 0 0 1 0 0 0 1 " NAME="Unlabeled20175" POSITION="83.2499 40.6875 3.54261" RADIUS="12.5" RGB="255 0 0" SEGMENT="Left_Shoe" STATUS="optional">
+        <MarkerTemplate COVARIANCE="1 0 0 0 1 0 0 0 1 " PLACEMENT-COVARIANCE="1 0 0 0 1 0 0 0 1 " POSITION="'Left Shoe_Unlabeled20175_x' 'Left Shoe_Unlabeled20175_y' 'Left Shoe_Unlabeled20175_z'"/>
+      </Marker>
+    </Markers>
+    <Sticks>
+      <Stick MARKER1="Unlabeled18658" MARKER2="Unlabeled19573" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled18658" MARKER2="Unlabeled20169" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled18658" MARKER2="Unlabeled20171" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled18658" MARKER2="Unlabeled20174" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled18658" MARKER2="Unlabeled20175" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled19573" MARKER2="Unlabeled20169" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled19573" MARKER2="Unlabeled20171" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled19573" MARKER2="Unlabeled20174" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled19573" MARKER2="Unlabeled20175" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled20169" MARKER2="Unlabeled20171" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled20169" MARKER2="Unlabeled20174" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled20169" MARKER2="Unlabeled20175" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled20171" MARKER2="Unlabeled20174" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled20171" MARKER2="Unlabeled20175" RGB="255 0 0"/>
+      <Stick MARKER1="Unlabeled20174" MARKER2="Unlabeled20175" RGB="255 0 0"/>
+    </Sticks>
+  </MarkerSet>
+
+  <Alignment/>
+
+</KinematicModel>

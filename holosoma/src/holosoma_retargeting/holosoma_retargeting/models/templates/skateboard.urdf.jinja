@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<robot name="skateboard">
+  <dynamics damping="0.5" friction="0.9"/>
+  <link name="skateboard_link">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.002" ixy="0" ixz="0" iyy="0.002" iyz="0" izz="0.002"/>
+    </inertial>
+    <contact>
+      <lateral_friction value="0.9"/>
+      <rolling_friction value="0.5"/>
+      <stiffness value="30000"/>
+      <damping value="1000"/>
+    </contact>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="../skateboard/skateboard.obj" scale="1.0 1.0 1.0"/>
+      </geometry>
+      <material name="mat">
+        <color rgba="0.2 0.25 0.3 0.9"/>
+      </material>
+    </visual>
+    <collision name="skateboard">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="../skateboard/skateboard.obj" scale="1.0 1.0 1.0"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
