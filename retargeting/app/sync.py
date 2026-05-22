@@ -3,10 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional, cast
 
+import numpy as np
 import typer
 
 from retargeting.config import RetargetingConfig, load_config
 from retargeting.constants import DEFAULT_CONFIG_PATH
+from retargeting.sync_trim_video import run_sync_trim_video_cli
 from retargeting.sync_visualize import run_sync_visualize_cli
 from retargeting.syncer import (
     CropMode,
@@ -14,7 +16,9 @@ from retargeting.syncer import (
     get_sync_signals,
     load_gvhmr_data,
     load_vicon_data,
+    make_video_frame_times,
     save_aligned_npz,
+    support_overlap_video_clock,
 )
 
 sync_app = typer.Typer(help="Commands for performing time synchronization of the Vicon data with the GVHMR data.")
@@ -27,6 +31,8 @@ def _plot_foot_speed_sync(
     vicon_tables_dir: Path,
     lag: float,
     corr: Optional[float],
+    crop: str,
+    t_keep: Optional[tuple[float, float]],
     show: bool,
     plot_file: Optional[Path],
 ) -> None:
@@ -68,6 +74,14 @@ def _plot_foot_speed_sync(
     ax2.set_xlabel("time (s, video clock)")
     ax2.legend(loc="upper right")
     ax2.grid(True, alpha=0.3)
+
+    if t_keep is not None:
+        t_lo, t_hi = t_keep
+        vline_kw = dict(linestyle=":", color="0.35", linewidth=1.5, zorder=5)
+        ax1.axvline(t_lo, label=f"kept window ({crop})", **vline_kw)
+        ax1.axvline(t_hi, **vline_kw)
+        ax2.axvline(t_lo, **vline_kw)
+        ax2.axvline(t_hi, **vline_kw)
 
     fig.tight_layout()
 
@@ -153,12 +167,32 @@ def time(
         )
 
     if plot or plot_file is not None:
+        t_keep: Optional[tuple[float, float]] = None
+        if crop != "none":
+            t_aligned = aligned_vicon["t"]
+            if n_t > 0:
+                t_keep = (float(t_aligned[0]), float(t_aligned[-1]))
+            else:
+                vicon = load_vicon_data(vicon_tables_dir / "merged.npz")
+                gvhmr = load_gvhmr_data(gvhmr_output_dir)
+                t_video = make_video_frame_times(
+                    len(gvhmr["joints"]),
+                    config.rate.video,
+                )
+                t_keep = support_overlap_video_clock(
+                    t_video,
+                    np.asarray(vicon["t"], dtype=float),
+                    lag,
+                )
+
         _plot_foot_speed_sync(
             config=config,
             gvhmr_output_dir=gvhmr_output_dir,
             vicon_tables_dir=vicon_tables_dir,
             lag=lag,
             corr=corr_f,
+            crop=crop,
+            t_keep=t_keep,
             show=plot,
             plot_file=plot_file,
         )
@@ -168,6 +202,30 @@ def time(
     if output_dir is not None:
         save_aligned_npz(output_dir / "unified.npz", aligned_vicon, meta_vicon)
         typer.echo(f"Wrote aligned npz to {output_dir / 'unified.npz'}")
+
+
+@sync_app.command(help="Trim source video to the synced time window in unified.npz.")
+def video(
+    unified_npz: Path = typer.Argument(
+        ...,
+        help="Path to unified.npz (e.g. output/synced/<demo>/unified.npz).",
+    ),
+    video_path: Path = typer.Argument(..., help="Original demo video (mp4/mov)."),
+    output_path: Path = typer.Argument(..., help="Output video path (e.g. .mp4)."),
+    config_path: Path = typer.Option(DEFAULT_CONFIG_PATH, help="Path to the configuration file (for fps)."),
+    no_ffmpeg: bool = typer.Option(
+        False,
+        "--no-ffmpeg",
+        help="Do not use ffmpeg; encode with OpenCV VideoWriter only.",
+    ),
+) -> None:
+    run_sync_trim_video_cli(
+        unified_npz,
+        video_path,
+        output_path,
+        config_path=config_path,
+        prefer_ffmpeg=not no_ffmpeg,
+    )
 
 
 @sync_app.command(help="Play source video beside OptiTrack markers using cached unified.npz times.")

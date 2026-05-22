@@ -1,2 +1,0 @@
-WORKSPACE_DIR=$HOME/.holosoma_deps
-CONDA_ROOT=$WORKSPACE_DIR/miniconda3

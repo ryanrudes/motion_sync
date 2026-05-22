@@ -1,0 +1,1 @@
+# Ad-hoc experiment scripts were moved here so unittest discovery (tests/test_*.py) stays clean.

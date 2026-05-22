@@ -862,6 +862,25 @@ def make_video_frame_times(num_frames: int, fps: float) -> np.ndarray:
     return np.arange(num_frames, dtype=float) / fps
 
 
+def support_overlap_video_clock(
+    t_video: np.ndarray,
+    t_vicon: np.ndarray,
+    lag: float,
+) -> tuple[float, float]:
+    """
+    Video-clock time range where both video and shifted-Vicon sources have support.
+
+    Matches ``TimelineStitcher.build(..., crop="support")`` overlap before row
+    dropping; independent of ``target_timeline``.
+    """
+    t_video = np.asarray(t_video, dtype=float)
+    t_vicon_shifted = np.asarray(t_vicon, dtype=float) - float(lag)
+    return (
+        float(max(t_video[0], t_vicon_shifted[0])),
+        float(min(t_video[-1], t_vicon_shifted[-1])),
+    )
+
+
 def get_sync_signals(
     vicon: Dict[str, Any],
     gvhmr: Dict[str, Any],

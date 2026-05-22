@@ -1,0 +1,52 @@
+rate:
+  video: 30.0
+  mocap: 100.0
+
+paths:
+  smplx_models: data/smplx_models
+
+rigid_body_solver:
+  max_stress: 1.0e-6
+  plane_solver:
+    max_stress: 4.0e-6
+
+time_sync_solver:
+  min_correlation: 0.28
+  max_abs_lag_seconds: 20.0
+  motion_weighted_sync: true
+  motion_weight_floor_quantile: 0.12
+  smplx_joints:
+    vicon/Left_Shoe/Left_Shoe:
+      - left_ankle
+      - left_foot
+    vicon/Right_Shoe/Right_Shoe:
+      - right_ankle
+      - right_foot
+
+bodies:
+  Left_Shoe:
+    markers:
+      - m0
+      - m1
+      - m2
+    planes:
+      foot_plane:
+        - m0
+        - m1
+        - m2
+  Right_Shoe:
+    markers:
+      - m3
+      - m4
+      - m5
+    planes:
+      foot_plane:
+        - m3
+        - m4
+        - m5
+  Skateboard:
+    markers:
+      - m6
+      - m7
+      - m8
+    planes: {}
