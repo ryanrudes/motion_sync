@@ -9,7 +9,7 @@ from numpy.typing import NDArray
 
 FloatArray = NDArray[np.float64]
 BoolArray = NDArray[np.bool_]
-
+IntArray1D = np.ndarray[tuple[int], np.dtype[np.integer]]
 
 def as_float_array(
     value: Any,

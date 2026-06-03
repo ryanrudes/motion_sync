@@ -32,6 +32,9 @@ class FootSupportState(IntEnum):
     GROUND = 1
     SKATEBOARD = 2
 
+    def __str__(self) -> str:
+        return self.name
+
     @classmethod
     def stance_states(cls) -> tuple[FootSupportState, FootSupportState]:
         """States counted as weight-bearing (ground or board).

@@ -11,7 +11,7 @@ import numpy as np
 
 from motion_sync.contact_layer import ContactLayer
 from motion_sync.contact_registration import ContactType
-from motion_sync.types import FloatArray
+from motion_sync.types import FloatArray, IntArray1D
 
 BodyT = TypeVar("BodyT", bound=StrEnum)
 StateT = TypeVar("StateT", bound=IntEnum)
@@ -89,7 +89,7 @@ class CategoricalSubjectTrack(Generic[BodyT, StateT]):
 
     subject: BodyT
     time_s: FloatArray
-    values: np.ndarray
+    values: IntArray1D
     state_type: type[StateT]
 
     @property
@@ -98,7 +98,7 @@ class CategoricalSubjectTrack(Generic[BodyT, StateT]):
         return int(self.values.shape[0])
 
     @property
-    def states(self) -> np.ndarray:
+    def states(self):
         """Per-frame state codes (``State`` ints), shape ``(T,)``."""
         return self.values
 
