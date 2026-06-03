@@ -5,10 +5,11 @@ from __future__ import annotations
 from enum import StrEnum
 
 from motion_sync.contact_registration import ContactSchema
-from motion_sync.contacts.foot_support import FootSupport
 from motion_sync.contacts.shoe_board_grip import ShoeBoardGrip
+from motion_sync.contacts.skate_foot_support import SkateFootSupport
 from motion_sync.mocap_schema import MocapSchema
 from motion_sync.session import ClipSession
+from motion_sync.surface_schema import BipedSolePatches, BodyMarkerPatch
 from motion_sync.video_schema import VideoSchema
 
 
@@ -71,6 +72,33 @@ class RightShoeMarkers(StrEnum):
     BIG_TOE = "Unlabeled21322"
     MEDIAL_ARCH = "Unlabeled21324"
     HEEL = "Unlabeled21323"
+
+
+# Per-marker sole offsets: ``BodyMarkerPatch.define(Bodies.LEFT_SHOE, { HEEL: BodyLocalVector(z=-0.025), ... })``
+LEFT_SHOE_SOLE = BodyMarkerPatch.define(
+    Bodies.LEFT_SHOE,
+    (
+        LeftShoeMarkers.HEEL,
+        LeftShoeMarkers.TOE_CENTER,
+        LeftShoeMarkers.BIG_TOE,
+        LeftShoeMarkers.LITTLE_TOE,
+    ),
+)
+"""Left shoe: marker-anchored patch → ``T_body_contact`` at compile time."""
+
+RIGHT_SHOE_SOLE = BodyMarkerPatch.define(
+    Bodies.RIGHT_SHOE,
+    (
+        RightShoeMarkers.HEEL,
+        RightShoeMarkers.TOE_CENTER,
+        RightShoeMarkers.BIG_TOE,
+        RightShoeMarkers.LITTLE_TOE,
+    ),
+)
+"""Right shoe: marker-anchored patch → ``T_body_contact`` at compile time."""
+
+SKATE_SOLE_PATCHES = BipedSolePatches(left=LEFT_SHOE_SOLE, right=RIGHT_SHOE_SOLE)
+"""Registered left/right sole patches for skate foot-support detection."""
 
 
 class SmplxCoreJoints(StrEnum):
@@ -174,10 +202,11 @@ SKATE_MOCAP: MocapSchema[Bodies] = MocapSchema(
 )
 """Registered mocap schema: shoes + skateboard bodies and marker enums."""
 
-SKATE_FOOT_SUPPORT = FootSupport(
-    left=Bodies.LEFT_SHOE,
-    right=Bodies.RIGHT_SHOE,
-    board=Bodies.SKATEBOARD,
+SKATE_FOOT_SUPPORT = SkateFootSupport(
+    Bodies.LEFT_SHOE,
+    Bodies.RIGHT_SHOE,
+    Bodies.SKATEBOARD,
+    sole_patches=SKATE_SOLE_PATCHES,
 )
 """Foot-support contact detector for left/right shoes and board."""
 

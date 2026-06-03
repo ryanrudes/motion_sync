@@ -93,7 +93,13 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
     def _foot_subjects(self) -> tuple[BodyT, BodyT]:
         return (self.left, self.right)
 
-    def detect(self, clip: Any, config: Any | None = None) -> ContactLayer:
+    def detect(
+        self,
+        clip: Any,
+        config: Any | None = None,
+        *,
+        body_rotations: Mapping[str, FloatArray] | None = None,
+    ) -> ContactLayer:
         """Run foot-support classification on Vicon bodies in ``clip``.
 
         Args:
@@ -122,7 +128,23 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
             zero_time=True,
             apply_valid_mask=False,
         )
-        result = classify_foot_support_states(t, body_names, body_pos, config=config)
+        classify_kwargs: dict[str, Any] = {}
+        if config.floor_fit_marker_names:
+            floor_fit_pos, floor_fit_names = stack_floor_fit_marker_pos(
+                clip,
+                config.floor_fit_marker_names,
+            )
+            classify_kwargs["floor_fit_marker_pos"] = floor_fit_pos
+            classify_kwargs["floor_fit_marker_names"] = floor_fit_names
+        if body_rotations is not None:
+            classify_kwargs["body_rotations"] = body_rotations
+        result = classify_foot_support_states(
+            t,
+            body_names,
+            body_pos,
+            config=config,
+            **classify_kwargs,
+        )
         layer = layer_from_foot_classification(result, self.layer_id)
         expected = (self.left.value, self.right.value)
         if layer.subjects != expected:
@@ -303,6 +325,30 @@ class FootSupportData(CategoricalContactData[BodyT, FootSupportState], Generic[B
             board_contact_offsets=self._layer.metadata.get("board_contact_offsets", {}),
             features={},
         )
+
+
+def stack_floor_fit_marker_pos(
+    clip: Any,
+    marker_names: tuple[str, ...] | list[str],
+) -> tuple[FloatArray, tuple[str, ...]]:
+    """Stack marker trajectories for :func:`contact_detection.classify_foot_support_states`.
+
+    Args:
+        clip: Clip with :meth:`~motion_sync.synced_dataset.SyncClip.marker`.
+        marker_names: Vicon marker strings in column order.
+
+    Returns:
+        ``(positions, names)`` with shape ``(frames, len(marker_names), 3)``.
+    """
+    names = tuple(marker_names)
+    if not names:
+        raise ValueError("marker_names must not be empty")
+    trajectories = [np.asarray(clip.marker(name), dtype=np.float64) for name in names]
+    frame_count = trajectories[0].shape[0]
+    for traj in trajectories:
+        if traj.shape != (frame_count, 3):
+            raise ValueError("each marker trajectory must have shape (frames, 3)")
+    return np.stack(trajectories, axis=1), names
 
 
 def foot_support_config(
