@@ -1,6 +1,6 @@
-# Two-foot retargeting
+# motion-sync
 
-Tools to ingest Vicon mocap and GVHMR video motion, align them in time, and write a single **`unified.npz`** per demo. Optional helpers trim source video to the synced window and visualize alignment.
+Ingest Vicon mocap and GVHMR video motion, align them in time, and write a single **`synced.npz`** per demo. Downstream code loads a typed **`SyncClip`** (bodies, markers, video joints, contact layers)—not raw NPZ keys. Optional helpers trim source video to the synced window and visualize alignment.
 
 ---
 
@@ -8,11 +8,12 @@ Tools to ingest Vicon mocap and GVHMR video motion, align them in time, and writ
 
 | Component | Role |
 |-----------|------|
-| `retargeting convert` | ROS 2 bags → `merged.npz` |
-| `retargeting fkin` | GVHMR `hmr4d_results.pt` → `joints.npy` / `vertices.npy` (required before sync) |
-| `retargeting sync` | Cross-correlate foot speeds, build `unified.npz`, trim video, debug viewer |
-| `retargeting model` | Optional rigid-body fits from marker clouds → `output/rigid_models/` |
-| `configs/retargeting.yaml` | Video/mocap rates, sync solver, marker names |
+| `motion-sync convert` | ROS 2 bags → `vicon.npz` (Vicon-only, mocap clock) |
+| `motion-sync fkin` | GVHMR `hmr4d_results.pt` → `joints.npy` / `vertices.npy` (required before sync) |
+| `motion-sync sync` | Cross-correlate foot speeds, build `synced.npz`, trim video, debug viewer |
+| `motion-sync model` | Optional rigid-body fits from marker clouds → `output/rigid_models/` |
+| `motion-sync detect` | Foot support (and derived contacts) on `synced.npz` |
+| `configs/motion_sync.yaml` | Video/mocap rates, sync solver, marker names |
 
 Batch drivers under `scripts/` wrap the same CLI for every demo under `output/`.
 
@@ -32,7 +33,7 @@ Batch drivers under `scripts/` wrap the same CLI for every demo under `output/`.
 ## Install
 
 ```bash
-cd twofoot_retargeting
+cd motion-sync   # repository root (rename clone from twofoot_retargeting if needed)
 uv sync
 ```
 
@@ -48,15 +49,15 @@ data/
   msg/*.msg                    # ROS types for bag conversion
 
 output/
-  vicon_tables/<demo>/merged.npz
+  vicon_tables/<demo>/vicon.npz
   gvhmr/<demo>/
     hmr4d_results.pt
-    joints.npy                 # from retargeting fkin
+    joints.npy                 # from motion_sync fkin
     vertices.npy
   synced/<demo>/
-    unified.npz
+    synced.npz
     video_trimmed.mp4          # optional
-  rigid_models/                # optional, from retargeting model
+  rigid_models/                # optional, from motion_sync model
 ```
 
 Use the **same demo name** in each tree (e.g. `pushoff8_twoshoes`).
@@ -71,7 +72,7 @@ Use the **same demo name** in each tree (e.g. `pushoff8_twoshoes`).
 ./scripts/convert_bags.bash data/bags output/vicon_tables
 
 # or one demo:
-uv run retargeting convert bag data/bags/<demo> output/vicon_tables/<demo>
+uv run motion-sync convert bag data/bags/<demo> output/vicon_tables/<demo>
 ```
 
 ### 2. Video: GVHMR (+ optional batch preprocess)
@@ -93,15 +94,15 @@ Sync loads `joints.npy` and `vertices.npy` from each GVHMR folder:
 ./scripts/run_smplx_fkin.bash output/gvhmr
 
 # or one demo:
-uv run retargeting fkin run output/gvhmr/<demo>
+uv run motion-sync fkin run output/gvhmr/<demo>
 ```
 
-### 4. Time sync → `unified.npz`
+### 4. Time sync → `synced.npz`
 
 One demo:
 
 ```bash
-uv run retargeting sync time \
+uv run motion-sync sync time \
   output/vicon_tables/<demo> \
   output/gvhmr/<demo> \
   -o output/synced/<demo>
@@ -124,9 +125,9 @@ Common flags:
 | `--target-timeline video` | One row per video frame (default: `vicon`) |
 | `--plot` / `--plot-file` | Foot-speed alignment figure |
 
-**Lag convention:** `t_vicon_unified = t_vicon - lag`. Plots use mocap at **`t_mocap - lag`** on the video-clock axis.
+**Lag convention:** `t_vicon_synced = t_vicon - lag`. Plots use mocap at **`t_mocap - lag`** on the video-clock axis.
 
-Tune sync in `configs/retargeting.yaml` (`time_sync_solver`: `min_correlation`, `max_abs_lag_seconds`, `motion_weighted_sync`).
+Tune sync in `configs/motion_sync.yaml` (`time_sync_solver`: `min_correlation`, `max_abs_lag_seconds`, `motion_weighted_sync`).
 
 ### 5. Trim video (optional)
 
@@ -135,19 +136,19 @@ Tune sync in `configs/retargeting.yaml` (`time_sync_solver`: `min_correlation`, 
 ./scripts/sync_trim_video.bash data/videos <demo> --force
 
 # or:
-uv run retargeting sync video \
-  output/synced/<demo>/unified.npz \
+uv run motion-sync sync video \
+  output/synced/<demo>/synced.npz \
   data/videos/<demo>.mp4 \
   output/synced/<demo>/video_trimmed.mp4
 ```
 
-Trims to `t[0]` … `t[-1]` from `unified.npz` (video-clock seconds).
+Trims to `t[0]` … `t[-1]` from `synced.npz` (video-clock seconds).
 
 ### 6. Visualize sync (optional)
 
 ```bash
-uv run retargeting sync visualize \
-  output/synced/<demo>/unified.npz \
+uv run motion-sync sync visualize \
+  output/synced/<demo>/synced.npz \
   data/videos/<demo>.mp4
 ```
 
@@ -162,35 +163,62 @@ Side-by-side video and OptiTrack markers (`q` quit, space pause).
 
 ---
 
-## `unified.npz` contents
+## Loading a clip in Python
 
-- **`t`** — timeline in **video-clock** seconds  
-- **`video__*`** — resampled GVHMR / SMPL streams (`joints`, `vertices`, `body_pose`, `transl`, `global_orient`, `betas`, …)  
-- **`vicon__*`** — resampled Vicon (`body_pos`, `body_quat`, `marker_pos`, …)  
-- **`lag`**, **`corr`** — sync metadata  
+Synced clips are persisted internally as compressed NPZ; application code should use **`SyncClip`** only (not ``vicon__*`` array keys). For skate trials, register everything in one step:
 
-**Axes:** GVHMR joints in `video__*` are **Y-up**; Vicon `vicon__body_pos` is **Z-up**.
+```python
+from motion_sync import SyncClip
+from motion_sync.contacts.foot_support import FootSupportState
+from motion_sync.schemas.skateboarding import (
+    Bodies,
+    SKATE_FOOT_SUPPORT,
+    SKATE_SESSION,
+    SmplxCoreJoints,
+)
 
-**Quaternions:** raw `merged.npz` uses wxyz from Vicon `/tf`. In `unified.npz`, `vicon__body_quat` is **xyzw** `[qx, qy, qz, qw]` (do not read as wxyz).
+clip = SyncClip.load("output/synced/pushoff5_twoshoes", session=SKATE_SESSION)
+
+if not clip.contact_is_fresh(SKATE_FOOT_SUPPORT):
+    clip = clip.detect(SKATE_FOOT_SUPPORT).save("output/synced/pushoff5_twoshoes")
+
+foot = clip.contact(SKATE_FOOT_SUPPORT)
+left = foot.track(Bodies.LEFT_SHOE)
+on_board = left.states == FootSupportState.SKATEBOARD
+
+left_foot = clip.joint(SmplxCoreJoints.L_FOOT).positions  # Y-up SMPL-X FK
+core = clip.core_joint_positions()  # (frames, 20, 3) retarget smplx order
+```
+
+Vicon poses are **Z-up** with body quaternions **xyzw**. Video/SMPL streams are **Y-up**. Use `clip.export_vicon_bodies()` when an algorithm expects `(t, body_names, body_pos)` arrays.
+
+---
+
+## Clip contents (via `SyncClip`)
+
+- **`clip.time_s`** — timeline in **video-clock** seconds  
+- **`clip.vicon`** — resampled Vicon bodies and markers (**Z-up**, body quaternions **xyzw**)  
+- **`clip.video`** — resampled GVHMR / SMPL streams (**Y-up**)  
+- **`clip.metadata`** — `lag_s`, optional `correlation`  
+- optional **`clip.valid`** mask  
 
 ---
 
 ## CLI reference
 
 ```bash
-uv run retargeting --help
+uv run motion-sync --help
 ```
 
 | Group | Command | Description |
 |-------|---------|-------------|
-| `convert` | `bag <bag_dir> <out_dir>` | ROS 2 bag → CSV/NPZ + `merged.npz` |
+| `convert` | `bag <bag_dir> <out_dir>` | ROS 2 bag → CSV/NPZ + `vicon.npz` |
 | `fkin` | `run <gvhmr_dir>` | Write `joints.npy`, `vertices.npy` |
-| `sync` | `time <vicon_tables> <gvhmr> -o <dir>` | Build `unified.npz` |
-| `sync` | `video <unified.npz> <src> <out>` | Trim video to sync window |
-| `sync` | `visualize <unified.npz> <src>` | Debug player |
+| `sync` | `time <vicon_tables> <gvhmr> -o <dir>` | Build `synced.npz` |
+| `sync` | `video <synced.npz> <src> <out>` | Trim video to sync window |
+| `sync` | `visualize <synced.npz> <src>` | Debug player |
 | `model` | `bodies <demo_tables> <out_dir>` | Optional rigid-body fits |
-
-`retargeting detect` is registered but not implemented yet.
+| `detect` | `foot-support <demo> [--force] [--plot]` | Classify foot support on `synced.npz` |
 
 ---
 
@@ -212,10 +240,10 @@ uv run retargeting --help
 | Issue | What to try |
 |-------|-------------|
 | Wrong sync lag | `--plot`; adjust `min_correlation` / `max_abs_lag_seconds` in YAML |
-| Very short `unified.npz` with `--crop valid` | Use `--crop support` or `none` |
+| Very short `synced.npz` with `--crop valid` | Use `--crop support` or `none` |
 | Missing `joints.npy` | Run `./scripts/run_smplx_fkin.bash output/gvhmr` before sync |
 | `Skipping … no hmr4d_results.pt` | Finish GVHMR for that demo name |
-| Quaternion bugs downstream | Use xyzw for `vicon__body_quat` in `unified.npz` |
+| Quaternion bugs downstream | Use xyzw for `vicon__body_quat` in `synced.npz` |
 
 ---
 
