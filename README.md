@@ -2,6 +2,8 @@
 
 Ingest Vicon mocap and GVHMR video motion, align them in time, and write a single **`synced.npz`** per demo. Downstream code loads a typed **`SyncClip`** (bodies, markers, video joints, contact layers)—not raw NPZ keys. Optional helpers trim source video to the synced window and visualize alignment.
 
+**Full documentation** (ecosystem overview, custom schemas, API reference, retarget wiring) lives in the [retarget](https://github.com/ryanrudes/retarget) docs site under **Ecosystem** and **API → motion_sync**. Clone retarget with `git clone --recurse-submodules` for the docs site; clone this repo beside retarget for pipeline and editable installs.
+
 ---
 
 ## What’s in the repo
@@ -33,7 +35,7 @@ Batch drivers under `scripts/` wrap the same CLI for every demo under `output/`.
 ## Install
 
 ```bash
-cd motion-sync   # repository root (rename clone from twofoot_retargeting if needed)
+cd motion_sync
 uv sync
 ```
 
