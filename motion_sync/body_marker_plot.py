@@ -5,14 +5,18 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import TYPE_CHECKING, Literal
 
-from motion_sync.synced_dataset import AllMarkersVisibleStrategy
-
 import numpy as np
+
+from motion_sync.synced_dataset import AllMarkersVisibleStrategy
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+
     from motion_sync.synced_dataset import BodyT, SyncClip
+
+FrameSelect = int | None | Literal["all_visible"]
+"""Frame index, ``None`` for frame 0, or ``"all_visible"`` to auto-pick."""
 
 
 def _marker_label(marker: StrEnum, label: Literal["name", "value"]) -> str:
@@ -105,7 +109,21 @@ def draw_body_markers_frame(
     marker_color: str | None = None,
     limits: tuple[np.ndarray, np.ndarray] | None = None,
 ) -> None:
-    """Draw one frame on ``ax`` (clears the axes first)."""
+    """Draw one frame of a rigid body and its markers on a 3D axes (clears ``ax`` first).
+
+    Requires :meth:`~motion_sync.synced_dataset.SyncClip.register_mocap` on ``clip``.
+
+    Args:
+        ax: Matplotlib 3D axes.
+        clip: Synced clip with marker registration.
+        body: Registered body enum member.
+        frame: Frame index along the clip timeline.
+        label: Use enum ``name`` or Vicon ``value`` for marker text labels.
+        connect_to_body: If True, draw gray segments from body COM to each marker.
+        body_color: Matplotlib color for the rigid-body star marker.
+        marker_color: Color for marker scatter points (matplotlib default if ``None``).
+        limits: Optional ``(lo, hi)`` length-3 bounds; sets equal-aspect cube limits when set.
+    """
     ax.cla()
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
@@ -143,9 +161,6 @@ def draw_body_markers_frame(
         _apply_limits(ax, limits)
 
 
-FrameSelect = int | None | Literal["all_visible"]
-
-
 def _resolve_plot_frame(
     clip: SyncClip[BodyT],
     body: BodyT,
@@ -180,12 +195,32 @@ def plot_body_markers(
 ) -> tuple[Figure, Axes]:
     """Plot a rigid body (star) and its markers (labeled) in 3D.
 
-    Requires :meth:`SyncClip.register_mocap` on ``clip``. For a single frame, pass
-    ``frame`` (default ``0``) or ``frame="all_visible"`` to auto-pick a frame where every
-    marker on ``body`` is finite. For playback, set ``animate=True`` (uses ``frame_step``
-    and ``clip.time_s`` for pacing).
+    Requires :meth:`~motion_sync.synced_dataset.SyncClip.register_mocap` on ``clip``.
+    For a single frame, pass ``frame`` (default ``0``) or ``frame="all_visible"`` to
+    auto-pick a frame where every marker on ``body`` is finite. For playback, set
+    ``animate=True`` (uses ``frame_step`` and ``clip.time_s`` for pacing).
 
-    Returns ``(fig, ax)`` for further customization.
+    Args:
+        clip: Synced clip with Vicon markers and mocap registration.
+        body: Registered body enum member to plot.
+        frame: Frame index, ``None`` for 0, or ``"all_visible"`` for auto selection.
+        animate: If True, step through frames with :func:`matplotlib.pyplot.pause`.
+        frame_step: Frames to advance per animation step (must be ``>= 1``).
+        all_visible_strategy: When ``frame="all_visible"``, pick ``first``, ``middle``, or
+            ``last`` among qualifying frames.
+        require_body: If True, rigid-body position must also be finite for ``all_visible``.
+        label: Marker text uses enum name or Vicon value string.
+        connect_to_body: Draw segments from body COM to markers.
+        show: Call ``plt.show`` when done (static or after animation).
+        block: Passed to ``plt.show``; defaults to blocking show.
+        ax: Existing 3D axes; if ``None``, a new figure is created.
+
+    Returns:
+        ``(fig, ax)`` for further customization.
+
+    Raises:
+        RuntimeError: If mocap registration was not performed.
+        ValueError: If the clip has no markers or ``frame_step < 1``.
     """
     import matplotlib.pyplot as plt
 

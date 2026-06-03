@@ -11,13 +11,30 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from motion_sync.types import BoolArray
 
 ContactLayerKind = Literal["binary", "categorical"]
+"""Storage kind: boolean mask or categorical integer states."""
+
 CONTACT_STORAGE_VERSION = 1
+"""NPZ format version written under ``contact__<layer_id>__version``."""
 
 _LAYER_ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
 class ContactLayer(BaseModel):
-    """One detector output aligned to a clip timeline."""
+    """One detector output aligned to a clip timeline.
+
+    Binary layers store a per-subject boolean mask; categorical layers store integer
+    state indices and a label table. Serialized into ``synced.npz`` via
+    :func:`encode_contact_layers`.
+
+    Attributes:
+        layer_id (str): Stable id matching :attr:`~motion_sync.contact_registration.ContactType.layer_id`.
+        kind (ContactLayerKind): ``"binary"`` or ``"categorical"``.
+        subjects (tuple[str, ...]): Subject names (e.g. ``left_foot``, ``right_foot``).
+        labels (tuple[str, ...]): State names for categorical layers; empty for binary.
+        states (np.ndarray | None): ``(frames, subjects)`` int8 indices (categorical only).
+        mask (np.ndarray | None): ``(frames, subjects)`` bool mask (binary only).
+        metadata (dict[str, Any]): Detection provenance (config hash, timestamps, …).
+    """
 
     model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
 
@@ -81,6 +98,7 @@ class ContactLayer(BaseModel):
 
     @property
     def frame_count(self) -> int:
+        """Number of timeline rows in ``states`` or ``mask``."""
         if self.states is not None:
             return int(self.states.shape[0])
         if self.mask is not None:
@@ -88,6 +106,14 @@ class ContactLayer(BaseModel):
         return 0
 
     def validate_frame_count(self, n_frames: int) -> None:
+        """Raise if this layer's row count differs from ``n_frames``.
+
+        Args:
+            n_frames: Expected clip timeline length.
+
+        Raises:
+            ValueError: Row count mismatch.
+        """
         if self.frame_count != n_frames:
             raise ValueError(
                 f"contact layer {self.layer_id!r} has {self.frame_count} frames, "
@@ -95,6 +121,14 @@ class ContactLayer(BaseModel):
             )
 
     def subset_frames(self, mask: BoolArray) -> ContactLayer:
+        """Return a copy keeping only rows where ``mask`` is True.
+
+        Args:
+            mask: Boolean row selector with length ``frame_count``.
+
+        Returns:
+            New layer with filtered ``states`` or ``mask`` arrays.
+        """
         mask = np.asarray(mask, dtype=bool)
         states = None if self.states is None else self.states[mask]
         layer_mask = None if self.mask is None else self.mask[mask]
@@ -106,7 +140,17 @@ def _storage_prefix(layer_id: str) -> str:
 
 
 def encode_contact_layers(layers: dict[str, ContactLayer]) -> dict[str, np.ndarray]:
-    """Serialize contact layers into synced.npz keys."""
+    """Serialize contact layers into ``synced.npz`` keys.
+
+    Args:
+        layers: Map ``layer_id → layer``.
+
+    Returns:
+        Flat dict of NPZ arrays (``contact__<id>__*`` keys).
+
+    Raises:
+        TypeError: If a metadata value has an unsupported type.
+    """
     out: dict[str, np.ndarray] = {}
     for layer in layers.values():
         p = _storage_prefix(layer.layer_id)
@@ -129,7 +173,7 @@ def encode_contact_layers(layers: dict[str, ContactLayer]) -> dict[str, np.ndarr
                 out[meta_key] = np.asarray(value)
             elif isinstance(value, dict):
                 names = np.array(list(value.keys()), dtype=object)
-                vals = np.array([float(value[k]) for k in value.keys()], dtype=np.float64)
+                vals = np.array([float(value[k]) for k in value], dtype=np.float64)
                 out[f"{p}meta__{key}__names"] = names
                 out[f"{p}meta__{key}__values"] = vals
             else:
@@ -143,7 +187,19 @@ def decode_contact_layers(
     files: list[str],
     get: Any,
 ) -> dict[str, ContactLayer]:
-    """Load contact layers from synced.npz keys."""
+    """Load contact layers from ``synced.npz`` keys.
+
+    Args:
+        files: List of array keys present in the archive.
+        get: Callable ``key → array`` (e.g. NPZ indexer).
+
+    Returns:
+        Map ``layer_id → ContactLayer``.
+
+    Raises:
+        ValueError: If a stored version does not match :const:`CONTACT_STORAGE_VERSION`.
+        KeyError: If required keys for a layer are missing (via ``get``).
+    """
     layer_ids: set[str] = set()
     for key in files:
         if key.startswith("contact__") and key.endswith("__version"):

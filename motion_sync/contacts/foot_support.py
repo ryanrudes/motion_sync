@@ -23,9 +23,9 @@ class FootSupportState(IntEnum):
     """Per-frame support state (values match ``contact_detection.FootSupportState``).
 
     Attributes:
-        AIR (int): Foot is airborne.
-        GROUND (int): Foot contacts the floor.
-        SKATEBOARD (int): Foot contacts the skateboard deck.
+        AIR (int): Foot is airborne (``0``).
+        GROUND (int): Foot contacts the floor (``1``).
+        SKATEBOARD (int): Foot contacts the skateboard deck (``2``).
     """
 
     AIR = 0
@@ -34,26 +34,50 @@ class FootSupportState(IntEnum):
 
     @classmethod
     def stance_states(cls) -> tuple[FootSupportState, FootSupportState]:
+        """States counted as weight-bearing (ground or board).
+
+        Returns:
+            ``(GROUND, SKATEBOARD)``.
+        """
         return (cls.GROUND, cls.SKATEBOARD)
 
 
 @dataclass(frozen=True)
 class FootSupportTrack(CategoricalSubjectTrack[BodyT, FootSupportState]):
-    """One foot's support state over the clip timeline."""
+    """One foot's support state over the clip timeline.
+
+    Attributes:
+        subject (BodyT): Shoe body enum for this foot.
+        time_s (FloatArray): Clip timeline in seconds.
+        values (np.ndarray): Per-frame :class:`FootSupportState` codes.
+        state_type (type[FootSupportState]): Always :class:`FootSupportState`.
+    """
 
     @property
     def foot(self) -> BodyT:
+        """Shoe body enum (alias for :attr:`subject`)."""
         return self.subject
 
     @property
     def stance(self) -> BoolArray:
-        """True on ground or skateboard support."""
+        """True on ground or skateboard support, shape ``(T,)``."""
         return np.isin(self.values, FootSupportState.stance_states())
 
 
 @dataclass(frozen=True)
 class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Generic[BodyT]):
-    """Contact type: classify each shoe as air, ground, or skateboard."""
+    """Contact type: classify each shoe as air, ground, or skateboard.
+
+    Detection delegates to :func:`contact_detection.classify_foot_support_states` using
+    Vicon rigid-body poses exported from the clip.
+
+    Attributes:
+        layer_id (str): ``"foot_support"``.
+        State (type[FootSupportState]): :class:`FootSupportState`.
+        left (BodyT): Left shoe Vicon body.
+        right (BodyT): Right shoe Vicon body.
+        board (BodyT): Skateboard rigid body (used for board-contact geometry).
+    """
 
     layer_id: ClassVar[str] = "foot_support"
     State: ClassVar[type[IntEnum]] = FootSupportState
@@ -67,6 +91,20 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
         return (self.left, self.right)
 
     def detect(self, clip: Any, config: Any | None = None) -> ContactLayer:
+        """Run foot-support classification on Vicon bodies in ``clip``.
+
+        Args:
+            clip: :class:`~motion_sync.synced_dataset.SyncClip` (or compatible) with Vicon export.
+            config: Optional :class:`~contact_detection.FootSupportConfig`; defaults from
+                :func:`foot_support_config` when omitted.
+
+        Returns:
+            Categorical layer with subjects ``(left.value, right.value)`` aligned to the clip.
+
+        Raises:
+            ImportError: If ``contact_detection`` is not installed.
+            ValueError: If detector frame count or subjects do not match the clip.
+        """
         if config is None:
             config = foot_support_config(self.left, self.right, self.board)
         try:
@@ -95,12 +133,29 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
         return layer
 
     def read(self, clip: Any, layer: ContactLayer) -> FootSupportData[BodyT]:
+        """Typed reader for an attached foot-support layer.
+
+        Args:
+            clip: Clip providing :attr:`~motion_sync.synced_dataset.SyncClip.time_s`.
+            layer: Categorical foot-support layer to validate and wrap.
+
+        Returns:
+            :class:`FootSupportData` view over ``layer``.
+        """
         self._validate_layer(layer)
         return FootSupportData(layer, contact=self, time_s=clip.time_s)
 
 
 def layer_from_foot_classification(classification: Any, layer_id: str) -> ContactLayer:
-    """Build a foot-support layer from :class:`~contact_detection.FootSupportClassification`."""
+    """Build a foot-support layer from :class:`~contact_detection.FootSupportClassification`.
+
+    Args:
+        classification: Detector output with ``states``, floor model fields, and offsets.
+        layer_id: Layer id to store (usually ``"foot_support"``).
+
+    Returns:
+        Categorical :class:`~motion_sync.contact_layer.ContactLayer` with detector metadata.
+    """
     foot_names = tuple(classification.states.keys())
     if not foot_names:
         raise ValueError("classification has no foot states")
@@ -141,6 +196,13 @@ class FootSupportData(CategoricalContactData[BodyT, FootSupportState], Generic[B
         contact: FootSupport[BodyT],
         time_s: FloatArray,
     ) -> None:
+        """Wrap a foot-support layer.
+
+        Args:
+            layer: Attached categorical layer.
+            contact: Registration object defining left/right shoe bodies.
+            time_s: Clip timeline in seconds.
+        """
         super().__init__(
             layer,
             subjects=contact._foot_subjects,
@@ -150,6 +212,14 @@ class FootSupportData(CategoricalContactData[BodyT, FootSupportState], Generic[B
         self._contact = contact
 
     def track(self, foot: BodyT | str) -> FootSupportTrack[BodyT]:
+        """Per-foot support track with stance helper.
+
+        Args:
+            foot: Left or right shoe body enum or Vicon name.
+
+        Returns:
+            :class:`FootSupportTrack` for that foot.
+        """
         base = super().track(foot)
         return FootSupportTrack(
             subject=base.subject,
@@ -159,32 +229,61 @@ class FootSupportData(CategoricalContactData[BodyT, FootSupportState], Generic[B
         )
 
     def tracks(self) -> dict[BodyT, FootSupportTrack[BodyT]]:
+        """Left and right foot tracks keyed by shoe body enum."""
         return {
             self._contact.left: self.track(self._contact.left),
             self._contact.right: self.track(self._contact.right),
         }
 
     def state(self, foot: BodyT | str, frame: int) -> FootSupportState:
+        """Support state at one frame.
+
+        Args:
+            foot: Shoe body enum or Vicon name.
+            frame: Zero-based frame index.
+
+        Returns:
+            :class:`FootSupportState` for that frame.
+        """
         return self.track(foot).state_at(frame)
 
     def stance_mask(self, foot: BodyT | str) -> BoolArray:
+        """Weight-bearing mask for one foot (ground or skateboard).
+
+        Args:
+            foot: Shoe body enum or Vicon name.
+
+        Returns:
+            Boolean array with shape ``(T,)``.
+        """
         return self.track(foot).stance
 
     def stance_matrix(self) -> BoolArray:
+        """Weight-bearing flags for left then right foot.
+
+        Returns:
+            Boolean array with shape ``(T, 2)``.
+        """
         left = self.track(self._contact.left).stance
         right = self.track(self._contact.right).stance
         return np.column_stack([left, right])
 
     @property
     def floor_height(self) -> float:
+        """Scalar floor height from detector metadata (meters)."""
         return float(self._layer.metadata["floor_height"])
 
     @property
     def board_contact_offsets(self) -> dict[str, float]:
+        """Per-foot vertical offsets used for board proximity (from metadata)."""
         return dict(self._layer.metadata.get("board_contact_offsets", {}))
 
     def classification(self) -> Any:
-        """Rebuild :class:`~contact_detection.FootSupportClassification` for plotting."""
+        """Rebuild :class:`~contact_detection.FootSupportClassification` for plotting.
+
+        Returns:
+            Classification object with ``t``, ``states``, and floor fields; ``features`` empty.
+        """
         from contact_detection import FootSupportClassification
 
         states = {
@@ -208,6 +307,16 @@ def foot_support_config(
     right: BodyT | str,
     board: BodyT | str,
 ) -> Any:
+    """Build :class:`~contact_detection.FootSupportConfig` from body names.
+
+    Args:
+        left: Left shoe body enum or Vicon name.
+        right: Right shoe body enum or Vicon name.
+        board: Skateboard body enum or Vicon name.
+
+    Returns:
+        Config wired for :func:`contact_detection.classify_foot_support_states`.
+    """
     from contact_detection import FootSupportConfig
 
     def _name(ref: BodyT | str) -> str:

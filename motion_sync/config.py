@@ -1,3 +1,5 @@
+"""YAML-backed motion-sync configuration models."""
+
 from pathlib import Path
 
 import yaml
@@ -5,24 +7,34 @@ from pydantic import BaseModel, Field
 
 
 class PlaneSolverConfig(BaseModel):
+    """Acceptance threshold for rigid-body plane fits."""
+
     max_stress: float
 
 
 class RigidBodySolverConfig(BaseModel):
+    """Rigid-body model estimation quality gates."""
+
     max_stress: float
     plane_solver: PlaneSolverConfig
 
 
 class RigidBodyConfig(BaseModel):
+    """Marker layout and optional coplanar groups for one Vicon rigid body."""
+
     markers: list[str]
     planes: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class PathsConfig(BaseModel):
+    """Filesystem paths referenced by the pipeline."""
+
     smplx_models: Path
 
 
 class TimeSyncSolverConfig(BaseModel):
+    """Foot-speed cross-correlation lag search and acceptance rules."""
+
     smplx_joints: dict[str, list[str]]
     min_correlation: float = Field(
         default=0.28,
@@ -49,11 +61,15 @@ class TimeSyncSolverConfig(BaseModel):
 
 
 class RateConfig(BaseModel):
+    """Nominal sample rates for video and mocap streams."""
+
     video: float | None
     mocap: float | None
 
 
 class MotionSyncConfig(BaseModel):
+    """Root config loaded from ``configs/motion_sync.yaml``."""
+
     paths: PathsConfig
     rate: RateConfig
     rigid_body_solver: RigidBodySolverConfig
@@ -62,8 +78,16 @@ class MotionSyncConfig(BaseModel):
 
 
 def load_config(path: Path) -> MotionSyncConfig:
-    with open(path, "r") as file:
+    """Load and validate a motion-sync YAML config file.
+
+    Args:
+        path: Path to a ``motion_sync.yaml`` (or compatible) file.
+
+    Returns:
+        Validated :class:`MotionSyncConfig` instance.
+    """
+    with open(path) as file:
         data = yaml.safe_load(file)
-    
+
     config = MotionSyncConfig.model_validate(data)
     return config

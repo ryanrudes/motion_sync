@@ -13,13 +13,35 @@ from motion_sync.video_schema import VideoSchema
 
 
 class Bodies(StrEnum):
+    """Vicon rigid-body names for skate trials.
+
+    Values are the strings stored in ``vicon.npz`` / ``synced.npz`` body tables.
+
+    Attributes:
+        LEFT_SHOE (str): Left shoe rigid body (``"Left_Shoe"``).
+        RIGHT_SHOE (str): Right shoe rigid body (``"Right_Shoe"``).
+        SKATEBOARD (str): Skateboard rigid body (``"Skateboard"``).
+    """
+
     LEFT_SHOE = "Left_Shoe"
     RIGHT_SHOE = "Right_Shoe"
     SKATEBOARD = "Skateboard"
 
 
 class LeftShoeMarkers(StrEnum):
-    """Left shoe markers (Vicon strings as values)."""
+    """Left shoe Vicon marker labels.
+
+    Logical names (``HEEL``, ``TOE_CENTER``, …) are shared with
+    :class:`RightShoeMarkers`; values are unique Vicon strings.
+
+    Attributes:
+        TOE_CENTER (str): Center of forefoot cluster.
+        LITTLE_TOE (str): Lateral toe marker.
+        LATERAL_ARCH (str): Lateral midfoot marker.
+        MEDIAL_ARCH (str): Medial midfoot marker.
+        BIG_TOE (str): Medial toe marker.
+        HEEL (str): Heel marker.
+    """
 
     TOE_CENTER = "Unlabeled18658"
     LITTLE_TOE = "Unlabeled19573"
@@ -30,7 +52,18 @@ class LeftShoeMarkers(StrEnum):
 
 
 class RightShoeMarkers(StrEnum):
-    """Right shoe markers — same logical names as left, different Vicon values."""
+    """Right shoe Vicon marker labels.
+
+    Same logical names as :class:`LeftShoeMarkers` with different Vicon values.
+
+    Attributes:
+        LITTLE_TOE (str): Lateral toe marker.
+        LATERAL_ARCH (str): Lateral midfoot marker.
+        TOE_CENTER (str): Center of forefoot cluster.
+        BIG_TOE (str): Medial toe marker.
+        MEDIAL_ARCH (str): Medial midfoot marker.
+        HEEL (str): Heel marker.
+    """
 
     LITTLE_TOE = "Unlabeled18579"
     LATERAL_ARCH = "Unlabeled20165"
@@ -41,7 +74,33 @@ class RightShoeMarkers(StrEnum):
 
 
 class SmplxCoreJoints(StrEnum):
-    """Retarget ``smplx`` core joints (enum order = :meth:`SyncClip.core_joint_positions` columns)."""
+    """SMPL-X core joint names for GVHMR / video-side kinematics.
+
+    Enum declaration order matches :meth:`~motion_sync.synced_dataset.SyncClip.core_joint_positions`
+    column order.
+
+    Attributes:
+        PELVIS (str): Root pelvis joint.
+        L_HIP (str): Left hip.
+        R_HIP (str): Right hip.
+        SPINE1 (str): Lower spine.
+        L_KNEE (str): Left knee.
+        R_KNEE (str): Right knee.
+        SPINE2 (str): Mid spine.
+        L_ANKLE (str): Left ankle.
+        R_ANKLE (str): Right ankle.
+        SPINE3 (str): Upper spine.
+        L_FOOT (str): Left foot.
+        R_FOOT (str): Right foot.
+        NECK (str): Neck.
+        HEAD (str): Head.
+        L_SHOULDER (str): Left shoulder.
+        R_SHOULDER (str): Right shoulder.
+        L_ELBOW (str): Left elbow.
+        R_ELBOW (str): Right elbow.
+        L_WRIST (str): Left wrist.
+        R_WRIST (str): Right wrist.
+    """
 
     PELVIS = "Pelvis"
     L_HIP = "L_Hip"
@@ -66,6 +125,27 @@ class SmplxCoreJoints(StrEnum):
 
 
 class SkateboardMarkers(StrEnum):
+    """Skateboard Vicon marker labels (poles, wheels, deck).
+
+    Attributes:
+        FRONT_RIGHT_POLE_LEFT (str): Front-right truck pole, left-side marker.
+        REAR_RIGHT_POLE_RIGHT (str): Rear-right truck pole, right-side marker.
+        FRONT_LEFT_POLE_RIGHT (str): Front-left truck pole, right-side marker.
+        FRONT_RIGHT_POLE_RIGHT (str): Front-right truck pole, right-side marker.
+        FRONT_LEFT_POLE_LEFT (str): Front-left truck pole, left-side marker.
+        REAR_RIGHT_POLE_LEFT (str): Rear-right truck pole, left-side marker.
+        REAR_LEFT_POLE_LEFT (str): Rear-left truck pole, left-side marker.
+        REAR_LEFT_POLE_RIGHT (str): Rear-left truck pole, right-side marker.
+        FRONT_LEFT_WHEEL (str): Front-left wheel marker.
+        FRONT_RIGHT_WHEEL (str): Front-right wheel marker.
+        REAR_LEFT_WHEEL (str): Rear-left wheel marker.
+        REAR_RIGHT_WHEEL (str): Rear-right wheel marker.
+        REAR_LEFT_BOARD (str): Rear-left deck marker.
+        REAR_RIGHT_BOARD (str): Rear-right deck marker.
+        FRONT_LEFT_BOARD (str): Front-left deck marker.
+        FRONT_CENTER_BOARD (str): Front-center deck marker.
+    """
+
     FRONT_RIGHT_POLE_LEFT = "front_right_pole_left"
     REAR_RIGHT_POLE_RIGHT = "rear_right_pole_right"
     FRONT_LEFT_POLE_RIGHT = "front_left_pole_right"
@@ -92,21 +172,27 @@ SKATE_MOCAP: MocapSchema[Bodies] = MocapSchema(
         Bodies.SKATEBOARD: SkateboardMarkers,
     },
 )
+"""Registered mocap schema: shoes + skateboard bodies and marker enums."""
 
 SKATE_FOOT_SUPPORT = FootSupport(
     left=Bodies.LEFT_SHOE,
     right=Bodies.RIGHT_SHOE,
     board=Bodies.SKATEBOARD,
 )
+"""Foot-support contact detector for left/right shoes and board."""
 
 SKATE_SHOE_BOARD_GRIP = ShoeBoardGrip(
     left=Bodies.LEFT_SHOE,
     right=Bodies.RIGHT_SHOE,
     foot_support=SKATE_FOOT_SUPPORT,
 )
+"""Binary shoe-on-board grip derived from :data:`SKATE_FOOT_SUPPORT`."""
 
 SKATE_CONTACTS = ContactSchema(types=(SKATE_FOOT_SUPPORT, SKATE_SHOE_BOARD_GRIP))
+"""Contact types registered for skate sessions."""
 
 SKATE_VIDEO = VideoSchema.smplx_core(SmplxCoreJoints)
+"""Video-side SMPL-X core joint schema for sync and visualization."""
 
 SKATE_SESSION = ClipSession(mocap=SKATE_MOCAP, contacts=SKATE_CONTACTS, video=SKATE_VIDEO)
+"""Default :class:`~motion_sync.session.ClipSession` for skateboarding trials."""

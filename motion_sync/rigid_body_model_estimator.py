@@ -7,19 +7,19 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-
 from scipy.optimize import least_squares
 from sklearn.linear_model import LinearRegression
 
-Point3 = Tuple[float, float, float]
-MarkerTracks = Dict[str, List[Optional[Point3]]]
+Point3 = tuple[float, float, float]
+MarkerTracks = dict[str, list[Point3 | None]]
 
 
 @dataclass
 class Plane:
+    """Least-squares plane fit ``z = coef[0]*x + coef[1]*y + intercept`` in marker space."""
+
     coefficients: np.ndarray
     intercept: float
     stress: float
@@ -48,6 +48,16 @@ class RigidBodyModel:
 def fit_plane(
     marker_positions: np.ndarray, marker_names: list[str], markers: list[str]
 ) -> Plane:
+    """Fit a horizontal-ish plane through named markers via linear regression on Z.
+
+    Args:
+        marker_positions: ``(N, 3)`` nominal marker coordinates.
+        marker_names: Names aligned with ``marker_positions`` rows.
+        markers: Subset of names to include in the fit (at least three).
+
+    Returns:
+        Plane coefficients, intercept, and mean squared residual stress.
+    """
     idx = [marker_names.index(m) for m in markers]
     X = marker_positions[idx]
     y = X[:, 2]
@@ -156,10 +166,14 @@ def estimate_pairwise_distances(
     """
     Robustly estimate inter-marker distances from co-visible frames.
 
+    Args:
+        tracks: Per-marker trajectories with ``None`` for occluded samples.
+        min_common_frames: Minimum co-visible frames required per pair.
+        mad_threshold: Robust outlier rejection threshold in MAD units.
+
     Returns:
-        names
-        D: pairwise distance matrix, NaN where unavailable
-        W: confidence weight matrix
+        Tuple of marker names, pairwise distance matrix ``D`` (NaN where
+        unavailable), and confidence weight matrix ``W``.
     """
     names, data, visible = _tracks_to_arrays(tracks)
     _, N, _ = data.shape

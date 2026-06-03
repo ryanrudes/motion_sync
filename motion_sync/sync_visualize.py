@@ -7,7 +7,6 @@ Timeline and marker positions come from :class:`~motion_sync.synced_dataset.Sync
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import typer
@@ -84,8 +83,24 @@ def run_sync_visualize(
     video_path: Path,
     config: MotionSyncConfig,
     start_frame: int = 0,
-    end_frame: Optional[int] = None,
+    end_frame: int | None = None,
 ) -> None:
+    """Play source video beside an XY marker panel aligned to the synced clip.
+
+    Timeline and marker positions come from ``synced_path``; frame times use
+    ``config.rate.video``. Controls: ``q``/Esc quit, space pause/resume.
+
+    Args:
+        synced_path: Demo directory or ``synced.npz`` file.
+        video_path: Source video to display.
+        config: Motion sync config (video fps).
+        start_frame: First video frame to show (inclusive).
+        end_frame: Last frame to show (exclusive); ``None`` uses the full video.
+
+    Raises:
+        ValueError: Clip has no marker tracks or invalid frame range.
+        RuntimeError: Video cannot be opened.
+    """
     import cv2
 
     synced_path = synced_path.resolve()
@@ -186,8 +201,9 @@ def run_sync_visualize_cli(
     *,
     config_path: Path,
     start_frame: int,
-    end_frame: Optional[int],
+    end_frame: int | None,
 ) -> None:
+    """CLI entry: load config and run :func:`run_sync_visualize`."""
     config = load_config(config_path)
     clip = SyncClip.load(synced_path)
     n_markers = 0 if clip.vicon.markers is None else clip.vicon.markers.marker_count

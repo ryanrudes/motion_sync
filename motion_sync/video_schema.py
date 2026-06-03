@@ -58,7 +58,17 @@ SMPLX_CORE_SOURCE_INDICES: tuple[int, ...] = (
 
 
 def validate_joint_enum(joint_enum: type[JointT], expected_names: tuple[str, ...]) -> None:
-    """Ensure enum members match ``expected_names`` in order (e.g. retarget smplx core)."""
+    """Ensure enum members match ``expected_names`` in order.
+
+    Args:
+        joint_enum: Project joint :class:`StrEnum`.
+        expected_names: Required member values in declaration order (e.g.
+            :const:`SMPLX_CORE_JOINT_NAMES`).
+
+    Raises:
+        TypeError: If ``joint_enum`` is not a :class:`StrEnum` subclass.
+        ValueError: If member values or order differ from ``expected_names``.
+    """
     if not issubclass(joint_enum, StrEnum):
         raise TypeError(f"joint_enum must be a StrEnum subclass, got {joint_enum!r}")
     actual = tuple(member.value for member in joint_enum)
@@ -73,8 +83,14 @@ def validate_joint_enum(joint_enum: type[JointT], expected_names: tuple[str, ...
 class VideoSchema(Generic[JointT]):
     """Project video vocabulary: logical joint enum plus FK indices into ``video__joints``.
 
-    Pass to :meth:`SyncClip.register_video` for typed :meth:`~SyncClip.joint` and
-    :meth:`~SyncClip.core_joint_positions`.
+    Pass to :meth:`~motion_sync.synced_dataset.SyncClip.register_video` for typed
+    :meth:`~motion_sync.synced_dataset.SyncClip.joint` and
+    :meth:`~motion_sync.synced_dataset.SyncClip.core_joint_positions`.
+
+    Attributes:
+        joints (type[JointT]): Logical joint :class:`StrEnum` for the project.
+        source_indices (tuple[int, ...]): FK column index per enum member (same order as
+            :meth:`joint_members`).
     """
 
     joints: type[JointT]
@@ -89,14 +105,39 @@ class VideoSchema(Generic[JointT]):
             )
 
     def joint_members(self) -> tuple[JointT, ...]:
+        """Return enum members in declaration order.
+
+        Returns:
+            Tuple of all members of :attr:`joints`.
+        """
         return tuple(self.joints)
 
     def core_index(self, joint: JointT) -> int:
-        """Column index in :meth:`~SyncClip.core_joint_positions` for ``joint``."""
+        """Return column index in :meth:`~motion_sync.synced_dataset.SyncClip.core_joint_positions`.
+
+        Args:
+            joint: Member of :attr:`joints`.
+
+        Returns:
+            Zero-based index along the stacked core-joint axis.
+
+        Raises:
+            ValueError: If ``joint`` is not in :meth:`joint_members`.
+        """
         return self.joint_members().index(joint)
 
     def validate_against_clip(self, joint_count: int) -> dict[str, int]:
-        """Validate FK indices against ``clip.video.joint_count``; return value→index map."""
+        """Validate FK indices against a clip's joint count.
+
+        Args:
+            joint_count: Number of joints in ``video__joints`` (second axis).
+
+        Returns:
+            Map ``joint_enum_value → column_index`` for :attr:`SyncClip.video_joint_map`.
+
+        Raises:
+            ValueError: If ``joint_count`` is zero or any index is out of range.
+        """
         if joint_count <= 0:
             raise ValueError("clip has no video joints to register against")
         mapping: dict[str, int] = {}
@@ -111,6 +152,17 @@ class VideoSchema(Generic[JointT]):
 
     @classmethod
     def smplx_core(cls, joints: type[JointT]) -> VideoSchema[JointT]:
-        """Schema for retarget's 20-joint SMPL-X core using standard GVHMR FK indices."""
+        """Build a schema for retarget's 20-joint SMPL-X core (standard GVHMR FK indices).
+
+        Args:
+            joints: Project enum whose values match :const:`SMPLX_CORE_JOINT_NAMES` in order.
+
+        Returns:
+            Schema using :const:`SMPLX_CORE_SOURCE_INDICES`.
+
+        Raises:
+            ValueError: If ``joints`` does not match the canonical name list.
+            TypeError: If ``joints`` is not a :class:`StrEnum` subclass.
+        """
         validate_joint_enum(joints, SMPLX_CORE_JOINT_NAMES)
         return cls(joints=joints, source_indices=SMPLX_CORE_SOURCE_INDICES)

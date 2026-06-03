@@ -10,7 +10,16 @@ BodyT = TypeVar("BodyT", bound=StrEnum)
 
 
 def validate_body_enum(body_enum: type[BodyT], body_names: tuple[str, ...]) -> None:
-    """Ensure a user-defined :class:`StrEnum` matches this clip's Vicon rigid-body names."""
+    """Ensure a user-defined :class:`StrEnum` matches this clip's Vicon rigid-body names.
+
+    Args:
+        body_enum: Project body enum; member **values** must equal Vicon subject strings.
+        body_names: Rigid-body names from the loaded clip (e.g. :attr:`SyncClip.body_names`).
+
+    Raises:
+        TypeError: If ``body_enum`` is not a :class:`StrEnum` subclass.
+        ValueError: If the enum and clip disagree on which bodies exist.
+    """
     if not issubclass(body_enum, StrEnum):
         raise TypeError(f"body_enum must be a StrEnum subclass, got {body_enum!r}")
     if not body_names:
@@ -34,7 +43,18 @@ def validate_marker_enum_for_clip(
     marker_enum: type[StrEnum],
     marker_names: tuple[str, ...],
 ) -> None:
-    """Ensure every member of a body marker enum exists on the clip (extras allowed on clip)."""
+    """Ensure every member of a body marker enum exists on the clip.
+
+    Extra markers on the clip are allowed; every enum value must appear in ``marker_names``.
+
+    Args:
+        marker_enum: Per-body marker :class:`StrEnum` (values are Vicon marker strings).
+        marker_names: Marker names from the loaded clip.
+
+    Raises:
+        TypeError: If ``marker_enum`` is not a :class:`StrEnum` subclass.
+        ValueError: If a member references a missing marker or values are duplicated.
+    """
     if not issubclass(marker_enum, StrEnum):
         raise TypeError(f"marker_enum must be a StrEnum subclass, got {marker_enum!r}")
     clip_names = set(marker_names)
@@ -53,7 +73,21 @@ def validate_body_marker_enums(
     body_markers: dict[BodyT, type[StrEnum]],
     marker_names: tuple[str, ...],
 ) -> dict[str, tuple[str, ...]]:
-    """Validate per-body marker enums partition the clip; return ``{body_value: (marker_value, ...)}``."""
+    """Validate per-body marker enums partition the clip's marker set.
+
+    Args:
+        body_enum: Project body enum.
+        body_markers: One marker enum per body; keys must cover every body member.
+        marker_names: All marker names on the clip.
+
+    Returns:
+        Map ``body_value → (marker_value, …)`` in enum iteration order.
+
+    Raises:
+        ValueError: If bodies or markers are missing, duplicated across bodies, or
+            do not partition ``marker_names`` exactly.
+        TypeError: If a marker enum is not a :class:`StrEnum` subclass.
+    """
     if not body_markers:
         raise ValueError("body_markers must not be empty")
 
@@ -115,15 +149,30 @@ class MocapSchema(Generic[BodyT]):
     Each body gets its own marker enum so logical names (e.g. ``HEEL``) can repeat across
     feet without conflicting. Enum **values** are the Vicon marker strings.
 
-    Pass to :meth:`SyncClip.register_mocap` for typed :meth:`~SyncClip.body` /
-    :meth:`~SyncClip.markers_for_body` access.
+    Pass to :meth:`~motion_sync.synced_dataset.SyncClip.register_mocap` for typed
+    :meth:`~motion_sync.synced_dataset.SyncClip.body` /
+    :meth:`~motion_sync.synced_dataset.SyncClip.markers_for_body` access.
+
+    Attributes:
+        bodies (type[BodyT]): Rigid-body :class:`StrEnum`; values match Vicon subject names.
+        body_markers (dict[BodyT, type[StrEnum]]): Marker enum per body member.
     """
 
     bodies: type[BodyT]
     body_markers: dict[BodyT, type[StrEnum]]
 
     def marker_enum_for(self, body: BodyT) -> type[StrEnum]:
-        """Marker enum class registered for ``body``."""
+        """Return the marker enum class registered for ``body``.
+
+        Args:
+            body: Member of :attr:`bodies`.
+
+        Returns:
+            That body's marker :class:`StrEnum` subclass.
+
+        Raises:
+            KeyError: If ``body`` is not a key of :attr:`body_markers`.
+        """
         return self.body_markers[body]
 
     def validate_against_clip(
@@ -131,6 +180,18 @@ class MocapSchema(Generic[BodyT]):
         body_names: tuple[str, ...],
         marker_names: tuple[str, ...],
     ) -> dict[str, tuple[str, ...]]:
-        """Validate against a loaded clip; return stored body→marker value map."""
+        """Validate this schema against a loaded clip.
+
+        Args:
+            body_names: Clip rigid-body names.
+            marker_names: Clip marker names.
+
+        Returns:
+            Stored body→marker value map for :attr:`SyncClip.body_marker_map`.
+
+        Raises:
+            ValueError: If bodies or markers do not match the schema rules.
+            TypeError: If enums are not :class:`StrEnum` subclasses.
+        """
         validate_body_enum(self.bodies, body_names)
         return validate_body_marker_enums(self.bodies, self.body_markers, marker_names)

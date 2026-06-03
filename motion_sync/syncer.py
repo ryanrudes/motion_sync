@@ -1,3 +1,5 @@
+"""Time-lag estimation and resampling for Vicon + GVHMR sync."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -83,6 +85,20 @@ DEFAULT_VICON_SCHEMA: Dict[str, Dict[str, Any]] = {
 
 @dataclass
 class FeatureSpec:
+    """One resampled stream registered on a :class:`TimelineStitcher`.
+
+    Attributes:
+        key: Output dict key (e.g. ``"vicon/body_pos"``).
+        t: Source sample times aligned with ``x`` axis 0.
+        x: Source array; time is axis 0.
+        mode: Interpolation mode passed to :func:`resample_feature`.
+        allow_extrapolate: Extrapolate outside source support when True.
+        quat_order: Source quaternion layout when ``mode="quat"``.
+        required: Gates ``crop="valid"`` row retention when True.
+        validity_body_indices: Optional body rows for finiteness checks on
+            ``(T, B, …)`` rigid-body stacks.
+    """
+
     key: str
     t: np.ndarray
     x: np.ndarray
@@ -90,8 +106,6 @@ class FeatureSpec:
     allow_extrapolate: bool = False
     quat_order: Optional[QuatOrder] = None
     required: bool = True
-    # For (T, B, ...) rigid-body stacks: gate crop=valid finiteness on these body indices only
-    # (e.g. shoes for sync while Skateboard TF may drop out).
     validity_body_indices: Optional[Tuple[int, ...]] = None
 
 
@@ -408,11 +422,18 @@ class TimelineStitcher:
         "valid"
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Create an empty stitcher (no features or source timelines yet)."""
         self.features: Dict[str, FeatureSpec] = {}
         self.source_times: Dict[str, np.ndarray] = {}
 
-    def add_source_time(self, source: str, t: np.ndarray):
+    def add_source_time(self, source: str, t: np.ndarray) -> None:
+        """Register a named source timeline (e.g. ``"video"`` or ``"vicon"``).
+
+        Args:
+            source: Label used by :meth:`build` when ``timeline`` is a string.
+            t: Strictly increasing sample times in seconds.
+        """
         self.source_times[source] = _as_time_array(t)
 
     def add(
@@ -426,7 +447,23 @@ class TimelineStitcher:
         quat_order: Optional[QuatOrder] = None,
         required: bool = True,
         validity_body_indices: Optional[Tuple[int, ...]] = None,
-    ):
+    ) -> None:
+        """Register one feature stream to resample onto the output timeline.
+
+        Args:
+            key: Output dict key (e.g. ``"video/joints"``).
+            t: Source sample times aligned with ``x`` axis 0.
+            x: Source array; time is axis 0.
+            mode: Interpolation mode (``linear``, ``quat``, ``rotvec``, …).
+            allow_extrapolate: If True, fill outside source support instead of NaN.
+            quat_order: Required when ``mode="quat"`` (``"xyzw"`` or ``"wxyz"``).
+            required: When ``crop="valid"``, only required streams gate row retention.
+            validity_body_indices: For ``(T, B, …)`` stacks, evaluate finiteness on
+                these body rows only (e.g. shoes while a board body drops out).
+
+        Raises:
+            ValueError: Duplicate key, length mismatch, or invalid quaternion spec.
+        """
         t = _as_time_array(t)
         x = _as_numpy(x)
         if len(t) != len(x):
@@ -463,6 +500,21 @@ class TimelineStitcher:
         crop: CropMode = "valid",
         include_valid_masks: bool = True,
     ) -> Dict[str, Any]:
+        """Resample registered features onto one unified timeline.
+
+        Args:
+            timeline: Source name from :meth:`add_source_time`, or an explicit
+                ``(T,)`` target time array in unified/video-clock seconds.
+            crop: ``"support"`` keeps overlap of all source ranges; ``"valid"``
+                keeps rows where required resampled features are finite;
+                ``"none"`` keeps the full target timeline.
+            include_valid_masks: If True, attach per-feature finiteness masks under
+                ``"__valid_masks__"``.
+
+        Returns:
+            Dict with ``"t"``, each registered feature key, ``"valid"`` row mask,
+            and optionally ``"__valid_masks__"``.
+        """
         if isinstance(timeline, str):
             if timeline not in self.source_times:
                 raise ValueError(
@@ -554,7 +606,22 @@ def resample_feature(
     *,
     mode: InterpMode,
     allow_extrapolate: bool = False,
-):
+) -> np.ndarray:
+    """Resample ``x_source`` from ``t_source`` onto ``t_target``.
+
+    Args:
+        t_source: Source sample times.
+        x_source: Source array with time on axis 0.
+        t_target: Target times to evaluate.
+        mode: Interpolation mode (see module type aliases).
+        allow_extrapolate: If True, extrapolate outside source support.
+
+    Returns:
+        Resampled array with length ``len(t_target)`` on axis 0.
+
+    Raises:
+        ValueError: Unknown mode or incompatible array shape.
+    """
     t_source = _as_time_array(t_source)
     t_target = _as_time_array(t_target)
     x_source = _as_numpy(x_source)
@@ -801,6 +868,16 @@ def load_vicon_data(path: Union[str, Path]) -> Dict[str, Any]:
 def load_gvhmr_data(
     gvhmr_output_dir: Union[str, Path],
 ) -> Dict[str, Any]:
+    """Load GVHMR FK outputs and SMPL parameters from a demo folder.
+
+    Args:
+        gvhmr_output_dir: Directory containing ``joints.npy``, ``vertices.npy``,
+            and ``hmr4d_results.pt``.
+
+    Returns:
+        Dict with ``joints``, ``vertices``, ``body_pose``, ``transl``,
+        ``global_orient``, and ``betas`` arrays.
+    """
     gvhmr_output_dir = Path(gvhmr_output_dir)
 
     joints = np.load(gvhmr_output_dir / "joints.npy")
@@ -829,6 +906,15 @@ def load_gvhmr_data(
 
 
 def make_video_frame_times(num_frames: int, fps: float) -> np.ndarray:
+    """Return video-clock sample times ``[0, 1/fps, …, (num_frames-1)/fps]``.
+
+    Args:
+        num_frames: Number of video frames.
+        fps: Video frame rate in Hz.
+
+    Returns:
+        ``(num_frames,)`` float array of sample times in seconds.
+    """
     return np.arange(num_frames, dtype=float) / fps
 
 
@@ -979,7 +1065,18 @@ def register_schema_features(
     source_data: Dict[str, Any],
     t: np.ndarray,
     schema: Dict[str, Dict[str, Any]],
-):
+) -> None:
+    """Register every schema entry present in ``source_data`` on ``stitcher``.
+
+    Args:
+        stitcher: Target stitcher.
+        source_data: Raw source dict (GVHMR or Vicon export).
+        t: Source timeline aligned with each schema array's axis 0.
+        schema: Map of output keys to ``array_key``, ``mode``, and optional flags.
+
+    Raises:
+        KeyError: Required ``array_key`` missing from ``source_data``.
+    """
     for output_key, spec in schema.items():
         array_key = spec["array_key"]
         required = spec.get("required", True)
@@ -1051,7 +1148,17 @@ def register_extra_features(
     stitcher: TimelineStitcher,
     features: Optional[Dict[str, Any]],
     t_default: np.ndarray,
-):
+) -> None:
+    """Register caller-supplied extra features validated by :func:`parse_extra_feature`.
+
+    Args:
+        stitcher: Target stitcher.
+        features: Map of output keys to explicit ``{"array", "mode", …}`` specs.
+        t_default: Timeline length each extra array must match.
+
+    Raises:
+        ValueError: Length mismatch or invalid feature spec.
+    """
     if not features:
         return
     for key, spec in features.items():
@@ -1291,6 +1398,14 @@ def xyzw_to_wxyz(q: np.ndarray) -> np.ndarray:
 
 
 def finite_time_mask(x: np.ndarray) -> np.ndarray:
+    """Per-row finiteness mask for a time-major array.
+
+    Args:
+        x: Array with time on axis 0.
+
+    Returns:
+        ``(T,)`` bool mask; 1D inputs use element-wise ``isfinite``.
+    """
     x = np.asarray(x)
 
     if x.ndim == 1:

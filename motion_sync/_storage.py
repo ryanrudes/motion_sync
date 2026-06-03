@@ -19,14 +19,27 @@ _VICON_BASENAME = "vicon.npz"
 
 
 def synced_dataset_path(sync_demo_dir: Path) -> Path:
+    """Return ``synced.npz`` path under a demo output directory."""
     return Path(sync_demo_dir) / _SYNCED_BASENAME
 
 
 def vicon_mocap_path(demo_vicon_dir: Path) -> Path:
+    """Return ``vicon.npz`` path under a demo Vicon tables directory."""
     return Path(demo_vicon_dir) / _VICON_BASENAME
 
 
 def resolve_synced_path(path: str | Path) -> Path:
+    """Resolve a demo directory or file path to an existing ``synced.npz``.
+
+    Args:
+        path: Demo folder, ``synced.npz`` file, or path without suffix.
+
+    Returns:
+        Absolute path to the synced NPZ file.
+
+    Raises:
+        FileNotFoundError: No synced clip at the resolved location.
+    """
     path = Path(path)
     if path.is_file():
         return path
@@ -38,6 +51,11 @@ def resolve_synced_path(path: str | Path) -> Path:
 
 
 def resolve_vicon_path(demo_vicon_dir: Path) -> Path:
+    """Resolve a demo directory to an existing ``vicon.npz``.
+
+    Raises:
+        FileNotFoundError: No Vicon mocap at the resolved location.
+    """
     path = vicon_mocap_path(demo_vicon_dir)
     if not path.is_file():
         raise FileNotFoundError(f"Vicon mocap not found: {path}")
@@ -45,6 +63,11 @@ def resolve_vicon_path(demo_vicon_dir: Path) -> Path:
 
 
 def infer_vicon_mocap_for_synced(synced_path: Path) -> Path | None:
+    """Guess sibling ``vicon_tables/<demo>/vicon.npz`` for marker names.
+
+    Returns:
+        Path when the standard layout exists, else ``None``.
+    """
     synced_path = resolve_synced_path(synced_path)
     demo = synced_path.parent.name
     root = synced_path.parent.parent.parent
@@ -73,6 +96,11 @@ def read_vicon_mocap(path: str | Path) -> dict[str, Any]:
 
 
 def read_vicon_marker_names(path: str | Path) -> tuple[str, ...]:
+    """Load the ``marker_names`` array from a Vicon export NPZ.
+
+    Raises:
+        KeyError: File has no ``marker_names`` array.
+    """
     path = Path(path)
     data = np.load(path, allow_pickle=True)
     if "marker_names" not in data.files:
@@ -90,6 +118,11 @@ def read_vicon_markers_table(path: str | Path) -> dict[str, np.ndarray]:
 
 
 def write_vicon_mocap(path: str | Path, payload: dict[str, Any]) -> Path:
+    """Write a Vicon mocap dict to ``vicon.npz`` (creates parent dirs).
+
+    Returns:
+        Path to the written file.
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     np.savez(path, **payload)
@@ -120,6 +153,16 @@ def read_synced_clip(
     name: str,
     vicon_mocap: Path | None,
 ) -> SyncClip:
+    """Load a :class:`~motion_sync.synced_dataset.SyncClip` from disk.
+
+    Args:
+        path: Demo directory or ``synced.npz`` file.
+        name: Demo label stored on the clip.
+        vicon_mocap: Optional ``vicon.npz`` used to attach marker name strings.
+
+    Returns:
+        Hydrated sync clip (marker names attached when ``vicon_mocap`` is set).
+    """
     from motion_sync.synced_dataset import SyncClip
 
     npz_path = resolve_synced_path(path)
@@ -131,6 +174,11 @@ def read_synced_clip(
 
 
 def write_synced_clip(clip: SyncClip, path: str | Path) -> Path:
+    """Persist a sync clip to ``synced.npz`` (creates parent dirs).
+
+    Returns:
+        Path to the written file.
+    """
     path = Path(path)
     if not path.is_file() and (path.is_dir() or path.suffix == ""):
         path = synced_dataset_path(path)

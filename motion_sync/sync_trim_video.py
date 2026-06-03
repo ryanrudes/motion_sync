@@ -11,7 +11,6 @@ import math
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import typer
@@ -241,6 +240,7 @@ def run_sync_trim_video_cli(
     config_path: Path,
     prefer_ffmpeg: bool,
 ) -> None:
+    """CLI entry: load config, trim video, and print a short summary."""
     config = load_config(config_path)
     summary = trim_video_to_synced_range(
         synced_path=synced_path,

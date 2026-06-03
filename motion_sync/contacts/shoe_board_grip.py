@@ -17,7 +17,17 @@ BodyT = TypeVar("BodyT", bound=StrEnum)
 
 @dataclass(frozen=True)
 class ShoeBoardGrip(BinaryContact["ShoeBoardGripData"], Generic[BodyT]):
-    """True when a shoe is classified as on the skateboard (not air or ground only)."""
+    """True when a shoe is classified as on the skateboard (not air or ground only).
+
+    Derived from an existing or freshly detected foot-support layer; does not call
+    ``contact_detection`` directly.
+
+    Attributes:
+        layer_id (str): ``"shoe_board_grip"``.
+        left (BodyT): Left shoe Vicon body.
+        right (BodyT): Right shoe Vicon body.
+        foot_support (FootSupport[BodyT]): Foot-support contact used as the source layer.
+    """
 
     layer_id: ClassVar[str] = "shoe_board_grip"
 
@@ -30,6 +40,18 @@ class ShoeBoardGrip(BinaryContact["ShoeBoardGripData"], Generic[BodyT]):
         return (self.left, self.right)
 
     def detect(self, clip: Any, config: Any | None = None) -> ContactLayer:
+        """Build grip mask from foot-support SKATEBOARD states.
+
+        Reuses a fresh foot-support layer on the clip when needed.
+
+        Args:
+            clip: :class:`~motion_sync.synced_dataset.SyncClip` (or compatible).
+            config: Optional foot-support detector config forwarded to
+                :meth:`FootSupport.detect`.
+
+        Returns:
+            Binary layer with subjects ``(left.value, right.value)``.
+        """
         if clip.has_contact(self.foot_support):
             fs_layer = clip.contact_layer(self.foot_support.layer_id)
             if not clip.contact_is_fresh(self.foot_support):
@@ -46,6 +68,15 @@ class ShoeBoardGrip(BinaryContact["ShoeBoardGripData"], Generic[BodyT]):
         )
 
     def read(self, clip: Any, layer: ContactLayer) -> ShoeBoardGripData[BodyT]:
+        """Typed reader for an attached shoe-board grip layer.
+
+        Args:
+            clip: Clip providing ``time_s``.
+            layer: Binary grip layer to validate and wrap.
+
+        Returns:
+            :class:`ShoeBoardGripData` view over ``layer``.
+        """
         self._validate_layer(layer)
         return ShoeBoardGripData(
             layer,
@@ -64,5 +95,12 @@ class ShoeBoardGripData(BinaryContactData[BodyT], Generic[BodyT]):
         contact: ShoeBoardGrip[BodyT],
         time_s: np.ndarray,
     ) -> None:
+        """Wrap a shoe-board grip layer.
+
+        Args:
+            layer: Attached binary layer.
+            contact: Registration object defining left/right shoes.
+            time_s: Clip timeline in seconds.
+        """
         super().__init__(layer, subjects=contact._subjects, time_s=time_s)
         self._contact = contact

@@ -13,12 +13,24 @@ import numpy as np
 from motion_sync.contact_layer import ContactLayer
 
 META_SOURCE_FRAME_COUNT = "source_frame_count"
+"""Layer metadata key: frame count when detection ran."""
+
 META_TIME_FINGERPRINT = "time_fingerprint"
+"""Layer metadata key: :func:`fingerprint_timeline` of ``clip.time_s`` at detection."""
+
 META_CONFIG_HASH = "config_hash"
+"""Layer metadata key: :func:`hash_detection_config` of the detector config."""
 
 
 def fingerprint_timeline(time_s: np.ndarray) -> str:
-    """Short hash of clip timeline shape and endpoints (detects sync regen / crop)."""
+    """Hash clip timeline shape and endpoints (detects sync regen / crop).
+
+    Args:
+        time_s: Clip time axis in seconds.
+
+    Returns:
+        16-character hex digest, or ``"empty"`` when no finite samples exist.
+    """
     t = np.asarray(time_s, dtype=np.float64)
     finite = t[np.isfinite(t)]
     if finite.size == 0:
@@ -31,7 +43,14 @@ def fingerprint_timeline(time_s: np.ndarray) -> str:
 
 
 def hash_detection_config(config: Any) -> str | None:
-    """Stable short hash of a detector config dataclass (or None)."""
+    """Stable short hash of a detector config dataclass or dict.
+
+    Args:
+        config: Dataclass, dict, or other object serialized for hashing.
+
+    Returns:
+        16-character hex digest, or ``None`` when ``config`` is ``None``.
+    """
     if config is None:
         return None
     if is_dataclass(config):
@@ -50,7 +69,17 @@ def stamp_detection_metadata(
     *,
     config: Any = None,
 ) -> ContactLayer:
-    """Attach provenance fields so stale layers can be detected after sync changes."""
+    """Attach provenance fields so stale layers can be detected after sync changes.
+
+    Args:
+        layer: Contact layer to stamp (copied on return).
+        clip: Clip supplying ``frame_count`` and ``time_s``.
+        config: Optional detector config hashed into metadata.
+
+    Returns:
+        Copy of ``layer`` with :data:`META_SOURCE_FRAME_COUNT`, :data:`META_TIME_FINGERPRINT`,
+        and optionally :data:`META_CONFIG_HASH` set.
+    """
     meta = dict(layer.metadata)
     meta[META_SOURCE_FRAME_COUNT] = int(clip.frame_count)
     meta[META_TIME_FINGERPRINT] = fingerprint_timeline(clip.time_s)
@@ -61,7 +90,17 @@ def stamp_detection_metadata(
 
 
 def contact_layer_is_fresh(layer: ContactLayer, clip: Any) -> bool:
-    """True if layer metadata matches the clip timeline (or metadata is absent)."""
+    """Return whether layer metadata matches the clip timeline.
+
+    Missing provenance fields are treated as fresh (backward compatible).
+
+    Args:
+        layer: Stored contact layer.
+        clip: Current clip to compare against.
+
+    Returns:
+        ``True`` if frame count and time fingerprint match (or metadata absent).
+    """
     stored_frames = layer.metadata.get(META_SOURCE_FRAME_COUNT)
     if stored_frames is None:
         return True
@@ -82,7 +121,16 @@ def warn_if_stale_contact_layer(
     *,
     layer_id: str | None = None,
 ) -> bool:
-    """Emit a warning when contact data may be out of date; return False if stale."""
+    """Emit a warning when contact data may be out of date.
+
+    Args:
+        layer: Stored contact layer.
+        clip: Current clip to compare against.
+        layer_id: Optional label for the warning (defaults to ``layer.layer_id``).
+
+    Returns:
+        ``True`` if the layer is fresh; ``False`` if stale (after emitting a warning).
+    """
     if contact_layer_is_fresh(layer, clip):
         return True
 
