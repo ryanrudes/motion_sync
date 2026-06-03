@@ -13,6 +13,8 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+from motion_sync import _storage
+
 convert_app = typer.Typer(help="Commands for converting data between formats.")
 
 def order_preserving_unique(arr):
@@ -383,6 +385,6 @@ def bag(bag_path: Path, output_dir: Path):
         tf_data = np.load(output_dir / "tf.npz", allow_pickle=True)
         marker_data = np.load(output_dir / "vicon" / "markers.npz", allow_pickle=True)
         payload = merge_tf_and_marker_data(tf_data, marker_data)
-        np.savez(output_dir / "merged.npz", **payload)
+        _storage.write_vicon_mocap(_storage.vicon_mocap_path(output_dir), payload)
     except Exception as e:
         print(f"Error merging TF and marker data: {e}")

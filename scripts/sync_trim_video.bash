@@ -8,8 +8,8 @@ usage() {
   cat <<'EOF'
 Usage: sync_trim_video.bash VIDEO_DIR [DEMO_NAME] [OPTIONS]
 
-  Trim source demo videos to the synced time window in output/synced/<demo>/unified.npz
-  (retargeting sync video). Writes video_trimmed.mp4 next to each unified.npz by default.
+  Trim source demo videos to the synced time window in output/synced/<demo>/synced.npz
+  (motion-sync sync video). Writes video_trimmed.mp4 next to each synced.npz by default.
 
 Arguments:
   VIDEO_DIR    Directory containing per-demo source videos (see resolution below).
@@ -17,7 +17,7 @@ Arguments:
 
 Options:
   --force      Re-trim even if video_trimmed.mp4 already exists.
-  --no-ffmpeg  Pass --no-ffmpeg to retargeting (OpenCV VideoWriter only).
+  --no-ffmpeg  Pass --no-ffmpeg to motion-sync (OpenCV VideoWriter only).
   -h, --help   Show this message.
 
 Source video resolution (first match wins):
@@ -137,11 +137,11 @@ for SYNC_DIR in "${SYNC_DIRS[@]}"; do
   fi
 
   DEMO_NAME="${SYNC_DIR##*/}"
-  UNIFIED="$SYNC_DIR/unified.npz"
+  SYNCED="$SYNC_DIR/synced.npz"
   OUT_VIDEO="$SYNC_DIR/$SYNC_TRIM_BASENAME"
 
-  if [ ! -f "$UNIFIED" ]; then
-    echo "Skipping '$DEMO_NAME': missing $UNIFIED (run sync first)." >&2
+  if [ ! -f "$SYNCED" ]; then
+    echo "Skipping '$DEMO_NAME': missing $SYNCED (run sync first)." >&2
     skipped=$((skipped + 1))
     continue
   fi
@@ -160,7 +160,7 @@ for SYNC_DIR in "${SYNC_DIRS[@]}"; do
   fi
 
   echo "Trimming '$DEMO_NAME': $SOURCE_VIDEO -> $OUT_VIDEO"
-  if uv run retargeting sync video "$UNIFIED" "$SOURCE_VIDEO" "$OUT_VIDEO" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}; then
+  if uv run motion-sync sync video "$SYNCED" "$SOURCE_VIDEO" "$OUT_VIDEO" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}; then
     processed=$((processed + 1))
   else
     echo "Failed '$DEMO_NAME' (exit $?)" >&2

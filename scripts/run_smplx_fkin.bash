@@ -30,9 +30,9 @@ for DEMO_DIR in "$GVHMR_ROOT"/*; do
   found_any=1
   echo "Processing: $DEMO_DIR"
   if [ -n "$CONFIG_PATH" ]; then
-    uv run retargeting fkin run "$DEMO_DIR" --config-path "$CONFIG_PATH"
+    uv run motion-sync fkin run "$DEMO_DIR" --config-path "$CONFIG_PATH"
   else
-    uv run retargeting fkin run "$DEMO_DIR"
+    uv run motion-sync fkin run "$DEMO_DIR"
   fi
 done
 

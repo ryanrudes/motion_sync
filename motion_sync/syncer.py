@@ -14,7 +14,7 @@ from scipy.optimize import minimize_scalar
 
 from smplx.joint_names import JOINT_NAMES
 
-from retargeting.config import RetargetingConfig
+from motion_sync.config import MotionSyncConfig
 
 
 InterpMode = Literal[
@@ -791,41 +791,11 @@ def sanitize_quaternions(
     return q
 
 
-def load_vicon_data(
-    path: Union[str, Path],
-) -> Dict[str, Any]:
-    """
-    Load a Vicon merged npz.
+def load_vicon_data(path: Union[str, Path]) -> Dict[str, Any]:
+    """Load Vicon mocap for the sync pipeline (see :class:`motion_sync.vicon_recording.ViconRecording`)."""
+    from motion_sync.vicon_recording import ViconRecording
 
-    Expected:
-        stamp: (T,)
-        body_names: object/list, optional
-        body_pos: (T, B, 3), optional
-        marker_pos: (T, M, 3), optional
-        any other time-series arrays with first dimension T
-    """
-
-    data = np.load(path, allow_pickle=True)
-
-    t = data["stamp"] - data["stamp"][0]
-
-    out: Dict[str, Any] = {
-        "t": t,
-        "body_names": data["body_names"].tolist()
-        if "body_names" in data
-        else None,
-    }
-
-    for key in data.files:
-        if key in {"stamp", "body_names"}:
-            continue
-
-        value = data[key]
-
-        if hasattr(value, "shape") and value.shape[0] == len(t):
-            out[key] = value
-
-    return out
+    return ViconRecording.load(path).to_syncer_dict()
 
 
 def load_gvhmr_data(
@@ -884,7 +854,7 @@ def support_overlap_video_clock(
 def get_sync_signals(
     vicon: Dict[str, Any],
     gvhmr: Dict[str, Any],
-    config: RetargetingConfig,
+    config: MotionSyncConfig,
 ):
     """
     Build foot-speed sync signals from Vicon body positions and GVHMR joints.
@@ -1040,7 +1010,7 @@ def register_schema_features(
 
 def resolve_vicon_schema_for_sync(
     vicon: Dict[str, Any],
-    config: RetargetingConfig,
+    config: MotionSyncConfig,
     user_schema: Optional[Dict[str, Dict[str, Any]]],
 ) -> Dict[str, Dict[str, Any]]:
     """
@@ -1101,11 +1071,11 @@ def register_extra_features(
         )
 
 
-def build_unified_dataset(
+def build_synced_dataset(
     *,
     gvhmr_dir: Union[str, Path],
     vicon_path: Union[str, Path],
-    config: RetargetingConfig,
+    config: MotionSyncConfig,
     target_timeline: Union[str, np.ndarray] = "video",
     crop: CropMode = "support",
     extra_video_features: Optional[Dict[str, Any]] = None,
@@ -1127,10 +1097,10 @@ def build_unified_dataset(
             hmr4d_results.pt
 
     vicon_path:
-        Path to merged Vicon npz.
+        Path to Vicon mocap npz (``vicon.npz`` from convert).
 
     config:
-        RetargetingConfig.
+        MotionSyncConfig.
 
     target_timeline:
         "video":
@@ -1295,36 +1265,13 @@ def save_aligned_npz(
     path: Union[str, Path],
     aligned: Dict[str, Any],
     meta: Dict[str, Any],
-):
-    """
-    Save synchronized arrays to compressed npz.
+) -> Path:
+    """Persist a synced clip built by :func:`build_synced_dataset`."""
+    from motion_sync.synced_dataset import SyncClip
 
-    Slashes in keys are replaced with double underscores:
-        video/joints -> video__joints
-        vicon/body_pos -> vicon__body_pos
-    """
-
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    arrays: Dict[str, Any] = {}
-
-    for key, value in aligned.items():
-        if key == "__valid_masks__":
-            continue
-
-        safe_key = key.replace("/", "__")
-        arrays[safe_key] = value
-
-    arrays["lag"] = np.array(meta["lag"])
-
-    if meta.get("corr") is not None:
-        arrays["corr"] = np.array(meta["corr"])
-
-    if meta.get("body_names") is not None:
-        arrays["vicon__body_names"] = np.array(meta["body_names"], dtype=object)
-
-    np.savez_compressed(path, **arrays)
+    out = Path(path)
+    clip = SyncClip.from_pipeline_aligned(aligned, meta, path=out)
+    return clip.save(out)
 
 
 def wxyz_to_xyzw(q: np.ndarray) -> np.ndarray:

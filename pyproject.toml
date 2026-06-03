@@ -3,9 +3,9 @@ requires = ["hatchling>=1.0.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "retargeting"
+name = "motion-sync"
 version = "0.1.0"
-description = "Add your description here"
+description = "Vicon + GVHMR ingest, time sync, and typed SyncClip multimodal trials."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -34,10 +34,10 @@ dev = [
 ]
 
 [project.scripts]
-retargeting = "retargeting.main:main"
+motion-sync = "motion_sync.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["retargeting"]
+packages = ["motion_sync"]
 
 [tool.uv]
 package = true

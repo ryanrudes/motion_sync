@@ -1,5 +1,5 @@
 """
-Trim a demo video to the synced time window stored in ``unified.npz``.
+Trim a demo video to the synced time window stored in a synced clip.
 
 The kept range is ``t[0]`` … ``t[-1]`` on the video-clock axis (same as ``sync visualize``).
 Frame indices use ``frame_i / fps`` with ``fps`` from config ``rate.video``.
@@ -16,34 +16,25 @@ from typing import Optional
 import numpy as np
 import typer
 
-from retargeting.config import RetargetingConfig, load_config
+from motion_sync.config import MotionSyncConfig, load_config
+from motion_sync.synced_dataset import SyncClip
 
 
-def synced_time_range_from_unified(unified_npz: Path) -> tuple[float, float]:
-    """Return ``(t_start, t_end)`` in video-clock seconds from ``unified.npz`` ``t``."""
-    unified_npz = Path(unified_npz).resolve()
-    if not unified_npz.is_file():
-        raise FileNotFoundError(f"Not a file: {unified_npz}")
-
-    data = np.load(unified_npz, allow_pickle=True)
-    if "t" not in data.files:
-        raise KeyError(f"{unified_npz} has no 't' array; expected a unified sync export.")
-
-    t_u = np.asarray(data["t"], dtype=float)
+def synced_time_range(synced_path: str | Path) -> tuple[float, float]:
+    """Return ``(t_start, t_end)`` in video-clock seconds for a synced clip."""
+    clip = SyncClip.load(synced_path)
+    t_u = np.asarray(clip.time_s, dtype=float)
     if t_u.size == 0:
-        raise ValueError(f"{unified_npz}: empty timeline 't' (re-run sync with a non-empty crop).")
-
+        raise ValueError("synced clip has an empty timeline")
     ok = np.isfinite(t_u)
     if not ok.any():
-        raise ValueError(f"{unified_npz}: no finite samples in 't'.")
-
+        raise ValueError("synced clip has no finite timeline samples")
     t_u = t_u[ok]
     if t_u.size == 1:
         return float(t_u[0]), float(t_u[0])
-
     if np.any(np.diff(t_u) < -1e-9):
         typer.echo(
-            "Warning: unified 't' is not monotonic; using min/max for trim window.",
+            "Warning: synced timeline is not monotonic; using min/max for trim window.",
             err=True,
         )
     return float(t_u.min()), float(t_u.max())
@@ -163,27 +154,27 @@ def _trim_with_opencv(
 
 def trim_video_to_synced_range(
     *,
-    unified_npz: Path,
+    synced_path: Path,
     video_path: Path,
     output_path: Path,
-    config: RetargetingConfig,
+    config: MotionSyncConfig,
     prefer_ffmpeg: bool = True,
 ) -> dict[str, float | int]:
     """
-    Trim ``video_path`` to the ``unified.npz`` synced window and write ``output_path``.
+    Trim ``video_path`` to the synced clip window and write ``output_path``.
 
     Returns a small summary dict (times, frames, fps).
     """
     import cv2
 
-    unified_npz = Path(unified_npz).resolve()
+    synced_path = Path(synced_path).resolve()
     video_path = Path(video_path).resolve()
     output_path = Path(output_path).resolve()
 
     if not video_path.is_file():
         raise FileNotFoundError(f"Not a file: {video_path}")
 
-    t_start, t_end = synced_time_range_from_unified(unified_npz)
+    t_start, t_end = synced_time_range(synced_path)
     fps = float(config.rate.video or 0.0)
     if fps <= 0:
         raise ValueError("config.rate.video must be a positive fps for video trim.")
@@ -243,7 +234,7 @@ def trim_video_to_synced_range(
 
 
 def run_sync_trim_video_cli(
-    unified_npz: Path,
+    synced_path: Path,
     video_path: Path,
     output_path: Path,
     *,
@@ -252,7 +243,7 @@ def run_sync_trim_video_cli(
 ) -> None:
     config = load_config(config_path)
     summary = trim_video_to_synced_range(
-        unified_npz=unified_npz,
+        synced_path=synced_path,
         video_path=video_path,
         output_path=output_path,
         config=config,

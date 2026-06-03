@@ -11,15 +11,15 @@ from rich.console import Console
 from rich.pretty import pprint
 from rich.table import Table
 
-from retargeting.rigid_body_model_estimator import (
+from motion_sync.rigid_body_model_estimator import (
     MarkerTracks,
     RigidBodyModel,
     _tracks_to_arrays,
     estimate_rigid_body_model,
 )
 
-from retargeting.config import load_config
-from retargeting import constants
+from motion_sync.config import load_config
+from motion_sync import constants
 
 model_app = typer.Typer(help="Commands for modeling the rigid body system.")
 
@@ -149,8 +149,10 @@ def bodies(
     verbose: bool = typer.Option(False, help="Print verbose output."),
 ):
     config = load_config(config_path)
+    from motion_sync import _storage
+
     markers_path = demo_vicon_tables_dir / "vicon" / "markers.npz"
-    data = np.load(markers_path, allow_pickle=True)
+    data = _storage.read_vicon_markers_table(markers_path)
 
     subject_name = np.char.strip(np.asarray(data["subject_name"], dtype=str))
     marker_name = data["marker_name"]

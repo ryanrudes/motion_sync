@@ -11,6 +11,6 @@ mkdir -p "$OUTPUT_DIR"
 for BAG_DIR in "$BAGS_DIR"/*; do
   if [ -d "$BAG_DIR" ]; then
     echo "Processing: $BAG_DIR"
-    uv run retargeting convert bag "$BAG_DIR" "$OUTPUT_DIR"
+    uv run motion-sync convert bag "$BAG_DIR" "$OUTPUT_DIR"
   fi
 done

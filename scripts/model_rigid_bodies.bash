@@ -9,8 +9,8 @@ Usage: model_rigid_bodies.bash [OPTIONS]
   writing Pickled models under output/rigid_models.
 
 Options:
-  --plot       Pass --plot to retargeting (show rigid body model plots).
-  -v, --verbose   Pass --verbose to retargeting (extra console output).
+  --plot       Pass --plot to motion-sync (show rigid body model plots).
+  -v, --verbose   Pass --verbose to motion-sync (extra console output).
   -h, --help   Show this message.
 EOF
 }
@@ -66,5 +66,9 @@ for DEMO in "$VICON_TABLES_DIR"/*; do
     exit 1
   fi
 
-  uv run retargeting model bodies "$DEMO" "$OUTPUT_DIR" "${EXTRA_ARGS[@]}"
+  if [ ${#EXTRA_ARGS[@]} -gt 0 ]; then
+    uv run motion-sync model bodies "$DEMO" "$OUTPUT_DIR" "${EXTRA_ARGS[@]}"
+  else
+    uv run motion-sync model bodies "$DEMO" "$OUTPUT_DIR"
+  fi
 done

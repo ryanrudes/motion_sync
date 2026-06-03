@@ -6,16 +6,17 @@ from typing import Optional, cast
 import numpy as np
 import typer
 
-from retargeting.config import RetargetingConfig, load_config
-from retargeting.constants import DEFAULT_CONFIG_PATH
-from retargeting.sync_trim_video import run_sync_trim_video_cli
-from retargeting.sync_visualize import run_sync_visualize_cli
-from retargeting.syncer import (
+from motion_sync.config import MotionSyncConfig, load_config
+from motion_sync.constants import DEFAULT_CONFIG_PATH
+from motion_sync.sync_trim_video import run_sync_trim_video_cli
+from motion_sync.sync_visualize import run_sync_visualize_cli
+from motion_sync import _storage
+from motion_sync.vicon_recording import ViconRecording
+from motion_sync.syncer import (
     CropMode,
-    build_unified_dataset,
+    build_synced_dataset,
     get_sync_signals,
     load_gvhmr_data,
-    load_vicon_data,
     make_video_frame_times,
     save_aligned_npz,
     support_overlap_video_clock,
@@ -26,7 +27,7 @@ sync_app = typer.Typer(help="Commands for performing time synchronization of the
 
 def _plot_foot_speed_sync(
     *,
-    config: RetargetingConfig,
+    config: MotionSyncConfig,
     gvhmr_output_dir: Path,
     vicon_tables_dir: Path,
     lag: float,
@@ -39,8 +40,8 @@ def _plot_foot_speed_sync(
     """
     Overlay Vicon vs video foot-speed signals in video-clock time.
 
-    Matches ``build_unified_dataset`` lag convention:
-    ``t_vicon_unified = t_vicon - lag``, so mocap native time ``t`` is drawn at ``t - lag``.
+    Matches ``build_synced_dataset`` lag convention:
+    ``t_vicon_synced = t_vicon - lag``, so mocap native time ``t`` is drawn at ``t - lag``.
     """
     if not show and plot_file is not None:
         import matplotlib
@@ -49,7 +50,7 @@ def _plot_foot_speed_sync(
 
     import matplotlib.pyplot as plt
 
-    vicon = load_vicon_data(vicon_tables_dir / "merged.npz")
+    vicon = ViconRecording.load(vicon_tables_dir).to_syncer_dict()
     gvhmr = load_gvhmr_data(gvhmr_output_dir)
     t_mocap, x_mocap, t_video, x_video = get_sync_signals(vicon, gvhmr, config)
 
@@ -122,7 +123,7 @@ def time(
         None,
         "--output",
         "-o",
-        help="If set, write aligned dataset to unified.npz under this directory.",
+        help="If set, write aligned dataset to synced.npz under this directory.",
     ),
 ):
     if target_timeline not in {"vicon", "video"}:
@@ -132,9 +133,9 @@ def time(
 
     config = load_config(config_path)
 
-    aligned_vicon, meta_vicon = build_unified_dataset(
+    aligned_vicon, meta_vicon = build_synced_dataset(
         gvhmr_dir=gvhmr_output_dir,
-        vicon_path=vicon_tables_dir / "merged.npz",
+        vicon_path=_storage.resolve_vicon_path(vicon_tables_dir),
         config=config,
         target_timeline=target_timeline,
         crop=cast(CropMode, crop),
@@ -161,7 +162,7 @@ def time(
         typer.secho(
             "Warning: very few rows after crop=valid. Often mocap/video duration mismatch "
             "or sparse video samples on this timeline; shoe-only finiteness is already used "
-            "for body_pos. Try --crop support (default in build_unified_dataset) or --crop none.",
+            "for body_pos. Try --crop support (default in build_synced_dataset) or --crop none.",
             fg=typer.colors.YELLOW,
             err=True,
         )
@@ -173,7 +174,7 @@ def time(
             if n_t > 0:
                 t_keep = (float(t_aligned[0]), float(t_aligned[-1]))
             else:
-                vicon = load_vicon_data(vicon_tables_dir / "merged.npz")
+                vicon = ViconRecording.load(vicon_tables_dir).to_syncer_dict()
                 gvhmr = load_gvhmr_data(gvhmr_output_dir)
                 t_video = make_video_frame_times(
                     len(gvhmr["joints"]),
@@ -200,15 +201,16 @@ def time(
             typer.echo(f"Wrote plot to {plot_file}")
 
     if output_dir is not None:
-        save_aligned_npz(output_dir / "unified.npz", aligned_vicon, meta_vicon)
-        typer.echo(f"Wrote aligned npz to {output_dir / 'unified.npz'}")
+        out_path = _storage.synced_dataset_path(output_dir)
+        save_aligned_npz(out_path, aligned_vicon, meta_vicon)
+        typer.echo(f"Wrote synced clip to {out_path}")
 
 
-@sync_app.command(help="Trim source video to the synced time window in unified.npz.")
+@sync_app.command(help="Trim source video to the synced time window in a synced clip.")
 def video(
-    unified_npz: Path = typer.Argument(
+    synced_path: Path = typer.Argument(
         ...,
-        help="Path to unified.npz (e.g. output/synced/<demo>/unified.npz).",
+        help="Synced clip path or demo directory (e.g. output/synced/<demo>/).",
     ),
     video_path: Path = typer.Argument(..., help="Original demo video (mp4/mov)."),
     output_path: Path = typer.Argument(..., help="Output video path (e.g. .mp4)."),
@@ -220,7 +222,7 @@ def video(
     ),
 ) -> None:
     run_sync_trim_video_cli(
-        unified_npz,
+        synced_path,
         video_path,
         output_path,
         config_path=config_path,
@@ -228,16 +230,14 @@ def video(
     )
 
 
-@sync_app.command(help="Play source video beside OptiTrack markers using cached unified.npz times.")
+@sync_app.command(help="Play source video beside OptiTrack markers using a synced clip timeline.")
 def visualize(
-    unified_npz: Path = typer.Argument(..., help="Path to unified.npz (e.g. output/synced/<demo>/unified.npz)."),
+    synced_path: Path = typer.Argument(
+        ...,
+        help="Synced clip path or demo directory (e.g. output/synced/<demo>/).",
+    ),
     video_path: Path = typer.Argument(..., help="Original demo video (mp4/mov)."),
     config_path: Path = typer.Option(DEFAULT_CONFIG_PATH, help="Path to the configuration file (for fps)."),
-    merged_npz: Optional[Path] = typer.Option(
-        None,
-        "--merged-npz",
-        help="Optional merged.npz for marker names; if omitted, tries output/vicon_tables/<demo>/merged.npz.",
-    ),
     start_frame: int = typer.Option(0, "--start-frame", help="First video frame index."),
     end_frame: Optional[int] = typer.Option(
         None,
@@ -246,10 +246,9 @@ def visualize(
     ),
 ) -> None:
     run_sync_visualize_cli(
-        unified_npz,
+        synced_path,
         video_path,
         config_path=config_path,
-        merged_npz=merged_npz,
         start_frame=start_frame,
         end_frame=end_frame,
     )

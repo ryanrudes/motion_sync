@@ -8,13 +8,13 @@ usage() {
   cat <<'EOF'
 Usage: sync.bash [OPTIONS]
 
-  Run time sync (retargeting sync time) for every demo under output/vicon_tables
+  Run time sync (motion-sync sync time) for every demo under output/vicon_tables
   that has a matching GVHMR directory under output/gvhmr.
 
-  Each demo writes unified.npz to output/synced/<demo_name>/ by default.
+  Each demo writes synced.npz to output/synced/<demo_name>/ by default.
 
 Options:
-  --plot       Pass --plot to retargeting (matplotlib foot-speed alignment; blocks per demo).
+  --plot       Pass --plot to motion-sync (matplotlib foot-speed alignment; blocks per demo).
   -h, --help   Show this message.
 
 Environment overrides (optional):
@@ -82,8 +82,8 @@ for DEMO_VICON in "${DEMOS[@]}"; do
   DEMO_GVHMR="$GVHMR_DIR/$DEMO_NAME"
   OUT_DIR="$SYNC_OUTPUT_ROOT/$DEMO_NAME"
 
-  if [ ! -f "$DEMO_VICON/merged.npz" ]; then
-    echo "Skipping '$DEMO_NAME': missing merged.npz under vicon tables." >&2
+  if [ ! -f "$DEMO_VICON/vicon.npz" ]; then
+    echo "Skipping '$DEMO_NAME': missing vicon.npz under vicon tables." >&2
     continue
   fi
 
@@ -95,5 +95,9 @@ for DEMO_VICON in "${DEMOS[@]}"; do
   mkdir -p "$OUT_DIR"
   echo "Syncing demo: $DEMO_NAME -> $OUT_DIR"
 
-  uv run retargeting sync time "$DEMO_VICON" "$DEMO_GVHMR" -o "$OUT_DIR" "${EXTRA_ARGS[@]}"
+  if [ ${#EXTRA_ARGS[@]} -gt 0 ]; then
+    uv run motion-sync sync time "$DEMO_VICON" "$DEMO_GVHMR" -o "$OUT_DIR" "${EXTRA_ARGS[@]}"
+  else
+    uv run motion-sync sync time "$DEMO_VICON" "$DEMO_GVHMR" -o "$OUT_DIR"
+  fi
 done

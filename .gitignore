@@ -27,6 +27,9 @@ output/
 # Trash
 trash/
 
+# Local scratch scripts (absolute paths, one-off experiments)
+test.py
+
 # Virtual environments
 .venv
 

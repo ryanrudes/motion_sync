@@ -1,7 +1,7 @@
 import typer
-from retargeting.app import convert_app, detect_app, fkin_app, model_app, sync_app
+from motion_sync.app import convert_app, detect_app, fkin_app, model_app, sync_app
 
-app = typer.Typer(help="Retargeting CLI")
+app = typer.Typer(help="Vicon + GVHMR ingest, time sync, and SyncClip tooling.")
 
 app.add_typer(convert_app, name="convert")
 app.add_typer(model_app, name="model")

@@ -5,8 +5,8 @@ import smplx
 
 from pathlib import Path
 
-from retargeting.config import load_config, RetargetingConfig
-from retargeting.constants import DEFAULT_CONFIG_PATH
+from motion_sync.config import load_config, MotionSyncConfig
+from motion_sync.constants import DEFAULT_CONFIG_PATH
 
 fkin_app = typer.Typer(help="Commands for performing forward kinematics on SMPL-X models.")
 
@@ -15,7 +15,7 @@ def run_smplx_fkin(
     transl: torch.Tensor,
     orient: torch.Tensor,
     betas: torch.Tensor,
-    config: RetargetingConfig,
+    config: MotionSyncConfig,
 ) -> dict:
     seq_len = body_pose.shape[0]
     num_betas = betas.shape[1]

@@ -53,7 +53,7 @@ class RateConfig(BaseModel):
     mocap: float | None
 
 
-class RetargetingConfig(BaseModel):
+class MotionSyncConfig(BaseModel):
     paths: PathsConfig
     rate: RateConfig
     rigid_body_solver: RigidBodySolverConfig
@@ -61,9 +61,9 @@ class RetargetingConfig(BaseModel):
     bodies: dict[str, RigidBodyConfig]
 
 
-def load_config(path: Path) -> RetargetingConfig:
+def load_config(path: Path) -> MotionSyncConfig:
     with open(path, "r") as file:
         data = yaml.safe_load(file)
     
-    config = RetargetingConfig.model_validate(data)
+    config = MotionSyncConfig.model_validate(data)
     return config
