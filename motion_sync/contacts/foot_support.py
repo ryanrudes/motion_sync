@@ -20,7 +20,13 @@ BodyT = TypeVar("BodyT", bound=StrEnum)
 
 
 class FootSupportState(IntEnum):
-    """Per-frame support state (values match ``contact_detection.FootSupportState``)."""
+    """Per-frame support state (values match ``contact_detection.FootSupportState``).
+
+    Attributes:
+        AIR (int): Foot is airborne.
+        GROUND (int): Foot contacts the floor.
+        SKATEBOARD (int): Foot contacts the skateboard deck.
+    """
 
     AIR = 0
     GROUND = 1

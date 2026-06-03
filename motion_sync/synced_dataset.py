@@ -37,14 +37,24 @@ JointT = TypeVar("JointT", bound=StrEnum)
 
 
 class AxisConvention(StrEnum):
-    """World-frame axis convention for a motion stream."""
+    """World-frame axis convention for a motion stream.
+
+    Attributes:
+        Z_UP_RIGHT_HANDED (str): Z-up, right-handed (typical mocap).
+        Y_UP_RIGHT_HANDED (str): Y-up, right-handed (typical video/SMPL).
+    """
 
     Z_UP_RIGHT_HANDED = "z_up_right_handed"
     Y_UP_RIGHT_HANDED = "y_up_right_handed"
 
 
 class QuaternionOrder(StrEnum):
-    """Component order for length-4 orientation arrays."""
+    """Component order for length-4 orientation arrays.
+
+    Attributes:
+        WXYZ (str): Scalar-first ``(w, x, y, z)``.
+        XYZW (str): Scalar-last ``(x, y, z, w)``.
+    """
 
     WXYZ = "wxyz"
     XYZW = "xyzw"
