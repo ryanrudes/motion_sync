@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from retargeting.rigid_body_model_estimator import (
+from motion_sync.rigid_body_model_estimator import (
     _robust_distance_estimate,
     estimate_pairwise_distances,
     fit_plane,

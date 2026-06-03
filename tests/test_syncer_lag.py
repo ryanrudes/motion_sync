@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from retargeting.syncer import _corr_demeaned_cosine, _corr_motion_weighted, estimate_lag
+from motion_sync.syncer import _corr_demeaned_cosine, _corr_motion_weighted, estimate_lag
 from tests.support import shifted_foot_speed_signals
 
 

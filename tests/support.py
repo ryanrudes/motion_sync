@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
-MINIMAL_CONFIG = FIXTURES_DIR / "retargeting_minimal.yaml"
+MINIMAL_CONFIG = FIXTURES_DIR / "motion_sync_minimal.yaml"
 
 
 def shifted_foot_speed_signals(
@@ -38,9 +38,45 @@ def shifted_foot_speed_signals(
     return t1, x1, t2, x2
 
 
-def write_unified_npz(path: Path, t: np.ndarray) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(path, t=np.asarray(t, dtype=float))
+def write_synced_clip_timeline(demo_dir: Path, t: np.ndarray) -> Path:
+    """Write a minimal synced clip with only a timeline (for trim/io tests)."""
+    from motion_sync.synced_dataset import SyncClip
+
+    t = np.asarray(t, dtype=float)
+    frames = int(t.shape[0])
+    if frames == 0:
+        from motion_sync import _storage
+
+        demo_dir = Path(demo_dir)
+        out = _storage.synced_dataset_path(demo_dir)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(
+            out,
+            t=t,
+            lag=np.array(0.0),
+            vicon__body_names=np.array(["A"], dtype=object),
+            vicon__body_pos=np.zeros((0, 1, 3)),
+            video__joints=np.zeros((0, 2, 3)),
+            video__transl=np.zeros((0, 3)),
+            video__global_orient=np.zeros((0, 3)),
+            video__body_pose=np.zeros((0, 63)),
+            video__betas=np.zeros((0, 10)),
+        )
+        return out
+
+    clip = SyncClip(
+        time_s=np.asarray(t, dtype=float),
+        vicon={"body_names": ("A",), "body_positions": np.zeros((frames, 1, 3))},
+        video={
+            "joints": np.zeros((max(frames, 1), 2, 3)),
+            "transl": np.zeros((max(frames, 1), 3)),
+            "global_orient": np.zeros((max(frames, 1), 3)),
+            "body_pose": np.zeros((max(frames, 1), 63)),
+            "betas": np.zeros((max(frames, 1), 10)),
+        },
+        metadata={"lag_s": 0.0},
+    )
+    return clip.save(demo_dir)
 
 
 def synthetic_convert_inputs() -> tuple[dict, dict]:

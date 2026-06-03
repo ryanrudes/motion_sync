@@ -3,23 +3,23 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from retargeting.config import RetargetingConfig, load_config
+from motion_sync.config import MotionSyncConfig, load_config
 from tests.support import MINIMAL_CONFIG
 
 
 class TestLoadConfig(unittest.TestCase):
     def test_load_minimal_fixture(self):
         cfg = load_config(MINIMAL_CONFIG)
-        self.assertIsInstance(cfg, RetargetingConfig)
+        self.assertIsInstance(cfg, MotionSyncConfig)
         self.assertEqual(cfg.rate.video, 30.0)
         self.assertEqual(cfg.rate.mocap, 100.0)
         self.assertIn("Left_Shoe", cfg.bodies)
         self.assertIn("vicon/Left_Shoe/Left_Shoe", cfg.time_sync_solver.smplx_joints)
 
     def test_load_repo_default_config(self):
-        repo_cfg = Path(__file__).resolve().parents[1] / "configs" / "retargeting.yaml"
+        repo_cfg = Path(__file__).resolve().parents[1] / "configs" / "motion_sync.yaml"
         if not repo_cfg.is_file():
-            self.skipTest("configs/retargeting.yaml not present")
+            self.skipTest("configs/motion_sync.yaml not present")
         cfg = load_config(repo_cfg)
         self.assertGreater(len(cfg.bodies), 0)
 

@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import numpy as np
 
-from retargeting.syncer import TimelineStitcher, support_overlap_video_clock
+from motion_sync.syncer import TimelineStitcher, support_overlap_video_clock
 
 
 class TestTimelineStitcher(unittest.TestCase):

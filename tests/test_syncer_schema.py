@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-from retargeting.config import load_config
-from retargeting.syncer import (
+from motion_sync.config import load_config
+from motion_sync.syncer import (
     TimelineStitcher,
     parse_extra_feature,
     register_schema_features,

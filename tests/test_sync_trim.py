@@ -4,8 +4,8 @@ from pathlib import Path
 
 import numpy as np
 
-from retargeting.sync_trim_video import synced_time_range_from_unified, time_range_to_frame_range
-from tests.support import write_unified_npz
+from motion_sync.sync_trim_video import synced_time_range, time_range_to_frame_range
+from tests.support import write_synced_clip_timeline
 
 
 class TestTimeRangeToFrameRange(unittest.TestCase):
@@ -26,17 +26,17 @@ class TestTimeRangeToFrameRange(unittest.TestCase):
 class TestSyncedTimeRangeEdgeCases(unittest.TestCase):
     def test_single_sample(self):
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "u.npz"
-            write_unified_npz(path, np.array([2.5]))
-            lo, hi = synced_time_range_from_unified(path)
+            demo = Path(tmp) / "demo"
+            write_synced_clip_timeline(demo, np.array([2.5]))
+            lo, hi = synced_time_range(demo)
             self.assertEqual(lo, 2.5)
             self.assertEqual(hi, 2.5)
 
     def test_non_monotonic_uses_min_max(self):
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "u.npz"
-            write_unified_npz(path, np.array([3.0, 1.0, 2.0]))
-            lo, hi = synced_time_range_from_unified(path)
+            demo = Path(tmp) / "demo"
+            write_synced_clip_timeline(demo, np.array([3.0, 1.0, 2.0]))
+            lo, hi = synced_time_range(demo)
             self.assertEqual(lo, 1.0)
             self.assertEqual(hi, 3.0)
 

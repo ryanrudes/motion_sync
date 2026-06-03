@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from scipy.spatial.transform import Rotation as R, Slerp
 
-from retargeting.syncer import resample_feature
+from motion_sync.syncer import resample_feature
 
 
 class TestResampleFeature(unittest.TestCase):

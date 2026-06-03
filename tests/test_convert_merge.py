@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from retargeting.app.convert import merge_tf_and_marker_data, order_preserving_unique
+from motion_sync.app.convert import merge_tf_and_marker_data, order_preserving_unique
 from tests.support import synthetic_convert_inputs
 
 

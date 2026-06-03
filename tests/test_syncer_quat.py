@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from retargeting.syncer import (
+from motion_sync.syncer import (
     finite_time_mask,
     sanitize_quaternions,
     wxyz_to_xyzw,

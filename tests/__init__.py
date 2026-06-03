@@ -1,1 +1,1 @@
-"""Unit tests for the retargeting package."""
+"""Unit tests for the motion_sync package."""
