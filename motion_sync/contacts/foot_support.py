@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field, replace
 from enum import IntEnum, StrEnum
 from typing import Any, ClassVar, Generic, TypeVar
 
@@ -80,6 +81,10 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
         left (BodyT): Left shoe Vicon body.
         right (BodyT): Right shoe Vicon body.
         board (BodyT): Skateboard rigid body (used for board-contact geometry).
+        contact_models: Body-local contact models used to shift sole markers onto
+            calibrated contact patches before floor fitting.
+        sole_patch_names: Optional body name → patch name mapping for the sole patch
+            used as the per-foot clearance point.
     """
 
     layer_id: ClassVar[str] = "foot_support"
@@ -88,17 +93,31 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
     left: BodyT
     right: BodyT
     board: BodyT
+    contact_models: tuple[Any, ...] = field(default_factory=tuple)
+    sole_patch_names: Mapping[str, str] | None = None
 
     @property
     def _foot_subjects(self) -> tuple[BodyT, BodyT]:
         return (self.left, self.right)
 
+    def default_config(self, **overrides: Any) -> Any:
+        """Build the default contact_detection config for this contact type."""
+
+        config = foot_support_config(
+            self.left,
+            self.right,
+            self.board,
+            contact_models=self.contact_models,
+            sole_patch_names=self.sole_patch_names,
+        )
+        if overrides:
+            config = replace(config, **overrides)
+        return config
+
     def detect(
         self,
         clip: Any,
         config: Any | None = None,
-        *,
-        body_rotations: Mapping[str, FloatArray] | None = None,
     ) -> ContactLayer:
         """Run foot-support classification on Vicon bodies in ``clip``.
 
@@ -115,7 +134,7 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
             ValueError: If detector frame count or subjects do not match the clip.
         """
         if config is None:
-            config = foot_support_config(self.left, self.right, self.board)
+            config = self.default_config()
         try:
             from contact_detection import classify_foot_support_states
         except ImportError as exc:
@@ -136,6 +155,7 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
             )
             classify_kwargs["floor_fit_marker_pos"] = floor_fit_pos
             classify_kwargs["floor_fit_marker_names"] = floor_fit_names
+        body_rotations = body_rotations_for_bodies(clip, config.foot_names)
         if body_rotations is not None:
             classify_kwargs["body_rotations"] = body_rotations
         result = classify_foot_support_states(
@@ -156,6 +176,41 @@ class FootSupport(CategoricalContact[FootSupportState, "FootSupportData"], Gener
                 f"detector returned {layer.frame_count} frames but clip has {clip.frame_count}"
             )
         return layer
+
+    def run_classification(self, clip: Any, config: Any | None = None) -> Any:
+        """Run classification and return detector features alongside states."""
+
+        if config is None:
+            config = self.default_config()
+        try:
+            from contact_detection import classify_foot_support_states
+        except ImportError as exc:
+            raise ImportError(
+                "Install contact-detection "
+                "(e.g. uv pip install -e ../event_detection)."
+            ) from exc
+        t, body_names, body_pos = clip.export_vicon_bodies(
+            zero_time=True,
+            apply_valid_mask=False,
+        )
+        classify_kwargs: dict[str, Any] = {}
+        if config.floor_fit_marker_names:
+            floor_fit_pos, floor_fit_names = stack_floor_fit_marker_pos(
+                clip,
+                config.floor_fit_marker_names,
+            )
+            classify_kwargs["floor_fit_marker_pos"] = floor_fit_pos
+            classify_kwargs["floor_fit_marker_names"] = floor_fit_names
+        body_rotations = body_rotations_for_bodies(clip, config.foot_names)
+        if body_rotations is not None:
+            classify_kwargs["body_rotations"] = body_rotations
+        return classify_foot_support_states(
+            t,
+            body_names,
+            body_pos,
+            config=config,
+            **classify_kwargs,
+        )
 
     def read(self, clip: Any, layer: ContactLayer) -> FootSupportData[BodyT]:
         """Typed reader for an attached foot-support layer.
@@ -355,6 +410,9 @@ def foot_support_config(
     left: BodyT | str,
     right: BodyT | str,
     board: BodyT | str,
+    *,
+    contact_models: tuple[Any, ...] = (),
+    sole_patch_names: Mapping[str, str] | None = None,
 ) -> Any:
     """Build :class:`~contact_detection.FootSupportConfig` from body names.
 
@@ -362,6 +420,8 @@ def foot_support_config(
         left: Left shoe body enum or Vicon name.
         right: Right shoe body enum or Vicon name.
         board: Skateboard body enum or Vicon name.
+        contact_models: Optional body-local contact models for sole calibration.
+        sole_patch_names: Optional body name → patch name mapping.
 
     Returns:
         Config wired for :func:`contact_detection.classify_foot_support_states`.
@@ -374,4 +434,21 @@ def foot_support_config(
     return FootSupportConfig(
         foot_names=(_name(left), _name(right)),
         board_name=_name(board),
+        contact_models=tuple(contact_models),
+        sole_patch_names=sole_patch_names,
     )
+
+
+def body_rotations_for_bodies(
+    clip: Any,
+    body_names: tuple[str, ...] | list[str],
+) -> dict[str, FloatArray] | None:
+    """Collect per-body XYZW quaternions from a clip when available."""
+
+    rotations: dict[str, FloatArray] = {}
+    for name in body_names:
+        body = clip.vicon.body(str(name))
+        if body.orientations is None:
+            continue
+        rotations[str(name)] = np.asarray(body.orientations, dtype=np.float64)
+    return rotations or None

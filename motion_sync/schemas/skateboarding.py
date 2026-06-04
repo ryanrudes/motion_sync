@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from enum import StrEnum
 
+from motion_sync.contact_model import patch_calibration, rigid_body_contact_model
 from motion_sync.contact_registration import ContactSchema
+from motion_sync.contacts.foot_support import FootSupport
 from motion_sync.contacts.shoe_board_grip import ShoeBoardGrip
-from motion_sync.contacts.skate_foot_support import SkateFootSupport
 from motion_sync.mocap_schema import MocapSchema
 from motion_sync.session import ClipSession
-from motion_sync.surface_schema import BipedSolePatches, BodyMarkerPatch
 from motion_sync.video_schema import VideoSchema
 
 
@@ -74,31 +74,43 @@ class RightShoeMarkers(StrEnum):
     HEEL = "Unlabeled21323"
 
 
-# Per-marker sole offsets: ``BodyMarkerPatch.define(Bodies.LEFT_SHOE, { HEEL: BodyLocalVector(z=-0.025), ... })``
-LEFT_SHOE_SOLE = BodyMarkerPatch.define(
+SOLE_PATCH = "sole"
+"""Canonical patch name for shoe sole contact surfaces."""
+
+LEFT_SHOE_CONTACT_MODEL = rigid_body_contact_model(
     Bodies.LEFT_SHOE,
-    (
-        LeftShoeMarkers.HEEL,
-        LeftShoeMarkers.TOE_CENTER,
-        LeftShoeMarkers.BIG_TOE,
-        LeftShoeMarkers.LITTLE_TOE,
-    ),
+    marker_type=LeftShoeMarkers,
+    patches={
+        SOLE_PATCH: patch_calibration(
+            (
+                LeftShoeMarkers.HEEL,
+                LeftShoeMarkers.TOE_CENTER,
+                LeftShoeMarkers.BIG_TOE,
+                LeftShoeMarkers.LITTLE_TOE,
+            )
+        ),
+    },
 )
-"""Left shoe: marker-anchored patch → ``T_body_contact`` at compile time."""
+"""Left shoe body-local contact model."""
 
-RIGHT_SHOE_SOLE = BodyMarkerPatch.define(
+RIGHT_SHOE_CONTACT_MODEL = rigid_body_contact_model(
     Bodies.RIGHT_SHOE,
-    (
-        RightShoeMarkers.HEEL,
-        RightShoeMarkers.TOE_CENTER,
-        RightShoeMarkers.BIG_TOE,
-        RightShoeMarkers.LITTLE_TOE,
-    ),
+    marker_type=RightShoeMarkers,
+    patches={
+        SOLE_PATCH: patch_calibration(
+            (
+                RightShoeMarkers.HEEL,
+                RightShoeMarkers.TOE_CENTER,
+                RightShoeMarkers.BIG_TOE,
+                RightShoeMarkers.LITTLE_TOE,
+            )
+        ),
+    },
 )
-"""Right shoe: marker-anchored patch → ``T_body_contact`` at compile time."""
+"""Right shoe body-local contact model."""
 
-SKATE_SOLE_PATCHES = BipedSolePatches(left=LEFT_SHOE_SOLE, right=RIGHT_SHOE_SOLE)
-"""Registered left/right sole patches for skate foot-support detection."""
+SKATE_CONTACT_MODEL = (LEFT_SHOE_CONTACT_MODEL, RIGHT_SHOE_CONTACT_MODEL)
+"""Body-local contact models used by skate foot-support detection."""
 
 
 class SmplxCoreJoints(StrEnum):
@@ -202,11 +214,15 @@ SKATE_MOCAP: MocapSchema[Bodies] = MocapSchema(
 )
 """Registered mocap schema: shoes + skateboard bodies and marker enums."""
 
-SKATE_FOOT_SUPPORT = SkateFootSupport(
+SKATE_FOOT_SUPPORT = FootSupport(
     Bodies.LEFT_SHOE,
     Bodies.RIGHT_SHOE,
     Bodies.SKATEBOARD,
-    sole_patches=SKATE_SOLE_PATCHES,
+    contact_models=SKATE_CONTACT_MODEL,
+    sole_patch_names={
+        Bodies.LEFT_SHOE.value: SOLE_PATCH,
+        Bodies.RIGHT_SHOE.value: SOLE_PATCH,
+    },
 )
 """Foot-support contact detector for left/right shoes and board."""
 

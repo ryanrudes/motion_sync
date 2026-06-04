@@ -6,16 +6,20 @@ from enum import StrEnum
 from pathlib import Path
 
 import numpy as np
-
 from motion_sync.contact_layer import ContactLayer, decode_contact_layers, encode_contact_layers
 from motion_sync.contacts.foot_support import (
     FootSupport,
     FootSupportState,
     layer_from_foot_classification,
 )
-from motion_sync.contacts.shoe_board_grip import ShoeBoardGrip
-from motion_sync.schemas.skateboarding import SKATE_SHOE_BOARD_GRIP
-from motion_sync.schemas.skateboarding import SKATE_CONTACTS, SKATE_FOOT_SUPPORT, SKATE_MOCAP
+from motion_sync.schemas.skateboarding import (
+    SKATE_CONTACTS,
+    SKATE_FOOT_SUPPORT,
+    SKATE_MOCAP,
+    SKATE_SHOE_BOARD_GRIP,
+    LeftShoeMarkers,
+    RightShoeMarkers,
+)
 from motion_sync.synced_dataset import SyncClip
 
 
@@ -157,11 +161,35 @@ class TestRegisteredFootSupport(unittest.TestCase):
         pos[:, 0, 2] = 0.05
         pos[:, 1, 2] = 0.05
         pos[:, 2, 2] = 0.08
+        orientations = np.zeros((frames, 3, 4), dtype=np.float64)
+        orientations[..., 3] = 1.0
+        left_offsets = {
+            LeftShoeMarkers.HEEL: (-0.05, -0.03, 0.0),
+            LeftShoeMarkers.TOE_CENTER: (0.05, 0.0, 0.0),
+            LeftShoeMarkers.BIG_TOE: (0.04, 0.03, 0.0),
+            LeftShoeMarkers.LITTLE_TOE: (0.04, -0.03, 0.0),
+        }
+        right_offsets = {
+            RightShoeMarkers.HEEL: (-0.05, -0.03, 0.0),
+            RightShoeMarkers.TOE_CENTER: (0.05, 0.0, 0.0),
+            RightShoeMarkers.BIG_TOE: (0.04, 0.03, 0.0),
+            RightShoeMarkers.LITTLE_TOE: (0.04, -0.03, 0.0),
+        }
+        marker_names = tuple(marker.value for marker in (*left_offsets, *right_offsets))
+        marker_positions = np.stack(
+            [
+                *(pos[:, 0, :] + np.asarray(offset, dtype=np.float64) for offset in left_offsets.values()),
+                *(pos[:, 1, :] + np.asarray(offset, dtype=np.float64) for offset in right_offsets.values()),
+            ],
+            axis=1,
+        )
         clip = SyncClip(
             time_s=t,
             vicon={
                 "body_names": ("Left_Shoe", "Right_Shoe", "Skateboard"),
                 "body_positions": pos,
+                "body_orientations": orientations,
+                "markers": {"names": marker_names, "positions": marker_positions},
             },
             video={
                 "joints": np.zeros((frames, 2, 3)),
